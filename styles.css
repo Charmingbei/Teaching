@@ -414,6 +414,33 @@ progress {
   color: var(--muted);
 }
 
+.database-panel {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.95fr) minmax(260px, 1.25fr) auto;
+  gap: 14px;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.database-panel h3 {
+  margin: 0 0 8px;
+}
+
+.database-panel p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.database-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .record-table-wrap {
   overflow-x: auto;
 }
@@ -474,7 +501,8 @@ th {
 
   .login-layout,
   .battle-grid,
-  .analytics-grid {
+  .analytics-grid,
+  .database-panel {
     grid-template-columns: 1fr;
   }
 
