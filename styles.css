@@ -208,14 +208,11 @@ textarea {
   background: white;
 }
 
-.qr-grid {
-  display: grid;
-  grid-template-columns: repeat(13, 1fr);
+.qr-image {
+  display: block;
+  width: 100%;
   height: 100%;
-}
-
-.qr-dot {
-  background: var(--ink);
+  object-fit: contain;
 }
 
 .join-copy {
