@@ -106,24 +106,6 @@ function enableGameTabs() {
   $("[data-view='worksheet']").disabled = false;
 }
 
-function generateQr() {
-  const grid = $("#qr-grid");
-  const finder = new Set([
-    "0,0", "0,1", "0,2", "0,3", "0,4", "1,0", "1,4", "2,0", "2,2", "2,4", "3,0", "3,4", "4,0", "4,1", "4,2", "4,3", "4,4",
-    "0,8", "0,9", "0,10", "0,11", "0,12", "1,8", "1,12", "2,8", "2,10", "2,12", "3,8", "3,12", "4,8", "4,9", "4,10", "4,11", "4,12",
-    "8,0", "8,1", "8,2", "8,3", "8,4", "9,0", "9,4", "10,0", "10,2", "10,4", "11,0", "11,4", "12,0", "12,1", "12,2", "12,3", "12,4"
-  ]);
-
-  for (let row = 0; row < 13; row += 1) {
-    for (let col = 0; col < 13; col += 1) {
-      const cell = document.createElement("div");
-      const patterned = (row * 7 + col * 5 + row * col) % 4 === 0;
-      if (finder.has(`${row},${col}`) || patterned) cell.className = "qr-dot";
-      grid.appendChild(cell);
-    }
-  }
-}
-
 function startGame(student) {
   const opponentName = demoOpponents[Math.floor(Math.random() * demoOpponents.length)];
   state.student = student;
@@ -459,7 +441,6 @@ function bindEvents() {
 }
 
 loadData();
-generateQr();
 bindEvents();
 renderLeaderboard();
 renderTeacher();
