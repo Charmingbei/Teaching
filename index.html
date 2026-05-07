@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20260508-qr" />
+    <link rel="stylesheet" href="styles.css?v=20260508-db" />
   </head>
   <body>
     <div class="app-shell">
@@ -169,6 +169,21 @@
               <div class="metric"><span id="metric-average">0</span><p>平均分數</p></div>
               <div class="metric"><span id="metric-weak">尚無</span><p>需加強概念</p></div>
             </div>
+            <section class="database-panel">
+              <div>
+                <p class="section-label">資料庫同步</p>
+                <h3>作答紀錄雲端備份</h3>
+                <p id="database-status">尚未設定資料庫端點，紀錄會先保存在本機。</p>
+              </div>
+              <label for="database-endpoint">
+                資料庫 Web App URL
+                <input id="database-endpoint" type="url" placeholder="貼上 Google Apps Script 或資料庫 API URL" />
+              </label>
+              <div class="database-actions">
+                <button class="secondary-action" id="save-database-endpoint" type="button">儲存端點</button>
+                <button class="secondary-action" id="sync-database" type="button">同步未上傳紀錄</button>
+              </div>
+            </section>
             <div class="record-table-wrap">
               <table>
                 <thead>
@@ -202,6 +217,6 @@
       </main>
     </div>
 
-    <script src="app.js?v=20260508-qr"></script>
+    <script src="app.js?v=20260508-db"></script>
   </body>
 </html>
