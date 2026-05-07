@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>守護未來島</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">六年級社會 × 環境教育</p>
+          <h1>守護未來島</h1>
+        </div>
+        <nav class="tabs" aria-label="主要分頁">
+          <button class="tab active" data-view="login">登入</button>
+          <button class="tab" data-view="battle" disabled>對戰</button>
+          <button class="tab" data-view="leaderboard">排行榜</button>
+          <button class="tab" data-view="teacher">教師分析</button>
+          <button class="tab" data-view="worksheet" disabled>學習單</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="view active" id="login-view">
+          <div class="login-layout">
+            <section class="panel login-panel">
+              <p class="section-label">學生登入</p>
+              <h2>掃描 QR Code 後輸入班級座號</h2>
+              <form id="login-form">
+                <label for="class-input">
+                  班級
+                  <select id="class-input" required>
+                    <option value="">請選擇班級</option>
+                    <option>601</option>
+                    <option>602</option>
+                    <option>603</option>
+                    <option>604</option>
+                    <option>605</option>
+                  </select>
+                </label>
+                <label for="seat-input">
+                  座號
+                  <input id="seat-input" type="number" min="1" max="40" placeholder="例如：12" required />
+                </label>
+                <label for="name-input">
+                  暱稱
+                  <input id="name-input" type="text" maxlength="12" placeholder="可留空，系統會自動命名" />
+                </label>
+                <button class="primary-action" type="submit">進入配對</button>
+              </form>
+            </section>
+
+            <aside class="qr-panel">
+              <div class="qr-card" aria-label="課堂登入 QR Code 示意">
+                <div class="qr-grid" id="qr-grid"></div>
+              </div>
+              <div class="join-copy">
+                <p>課堂入口</p>
+                <strong>future-island.school/play</strong>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="battle-view">
+          <div class="battle-grid">
+            <section class="panel battle-panel">
+              <div class="battle-meta">
+                <div>
+                  <p class="section-label">第 <span id="round-now">1</span> 回合 / 5</p>
+                  <h2 id="question-title">環境情境題</h2>
+                </div>
+                <div class="timer" id="timer">60</div>
+              </div>
+
+              <p class="scenario" id="scenario-text"></p>
+
+              <div class="choice-group">
+                <p class="field-title">選擇你的立場</p>
+                <div class="segmented" id="stance-options"></div>
+              </div>
+
+              <div class="choice-group">
+                <p class="field-title">選擇最重要的理由卡</p>
+                <div class="reason-grid" id="reason-options"></div>
+              </div>
+
+              <label class="reflection-box" for="reflection-input">
+                補充一句你的想法
+                <textarea id="reflection-input" maxlength="120" placeholder="請寫下你的理由或替代方案"></textarea>
+              </label>
+
+              <div class="battle-actions">
+                <button class="secondary-action" id="simulate-opponent" type="button">模擬對手作答</button>
+                <button class="primary-action" id="submit-round" type="button">送出本回合</button>
+              </div>
+            </section>
+
+            <aside class="panel match-panel">
+              <p class="section-label">雙人對打</p>
+              <div class="player-row self">
+                <span id="player-badge">我</span>
+                <div>
+                  <strong id="player-name">尚未登入</strong>
+                  <p id="player-score">0 分</p>
+                </div>
+              </div>
+              <div class="versus">VS</div>
+              <div class="player-row opponent">
+                <span id="opponent-badge">對手</span>
+                <div>
+                  <strong id="opponent-name">等待配對</strong>
+                  <p id="opponent-score">0 分</p>
+                </div>
+              </div>
+              <div class="island-meter">
+                <p>未來島狀態</p>
+                <div class="meter-row"><span>生態</span><progress id="eco-meter" max="100" value="62"></progress></div>
+                <div class="meter-row"><span>生活</span><progress id="life-meter" max="100" value="68"></progress></div>
+                <div class="meter-row"><span>永續</span><progress id="sustain-meter" max="100" value="55"></progress></div>
+              </div>
+              <div class="log-list" id="battle-log"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="leaderboard-view">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">即時回饋</p>
+                <h2>排行榜</h2>
+              </div>
+              <button class="secondary-action" id="seed-demo" type="button">加入示範資料</button>
+            </div>
+            <div class="leaderboard-tabs">
+              <button class="mini-tab active" data-board="score">總積分</button>
+              <button class="mini-tab" data-board="thinking">最佳思辨</button>
+              <button class="mini-tab" data-board="growth">進步表現</button>
+            </div>
+            <div class="leaderboard" id="leaderboard"></div>
+          </section>
+        </section>
+
+        <section class="view" id="teacher-view">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">教師後台</p>
+                <h2>作答紀錄與概念分析</h2>
+              </div>
+              <button class="secondary-action" id="clear-data" type="button">清除紀錄</button>
+            </div>
+            <div class="analytics-grid">
+              <div class="metric"><span id="metric-students">0</span><p>登入學生</p></div>
+              <div class="metric"><span id="metric-rounds">0</span><p>作答回合</p></div>
+              <div class="metric"><span id="metric-average">0</span><p>平均分數</p></div>
+              <div class="metric"><span id="metric-weak">尚無</span><p>需加強概念</p></div>
+            </div>
+            <div class="record-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>學生</th>
+                    <th>題目</th>
+                    <th>立場</th>
+                    <th>理由</th>
+                    <th>分數</th>
+                    <th>迷思標記</th>
+                  </tr>
+                </thead>
+                <tbody id="record-table"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="worksheet-view">
+          <section class="panel worksheet-panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">個人化學習</p>
+                <h2 id="worksheet-title">我的環境決策學習單</h2>
+              </div>
+              <button class="secondary-action" id="print-worksheet" type="button">列印</button>
+            </div>
+            <div id="worksheet-content" class="worksheet-content"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
