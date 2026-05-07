@@ -58,6 +58,7 @@ const questions = [
 
 const demoOpponents = ["晨希", "品安", "宥廷", "語晴", "柏翰", "苡柔", "承恩", "若妍"];
 const storageKey = "future-island-prototype";
+const databaseEndpointKey = "future-island-database-endpoint";
 
 const state = {
   view: "login",
@@ -70,6 +71,8 @@ const state = {
   opponentScore: 0,
   records: [],
   students: [],
+  databaseEndpoint: "",
+  syncQueue: [],
   board: "score",
   timerId: null,
   seconds: 60,
@@ -83,13 +86,21 @@ function loadData() {
   const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
   state.records = saved.records || [];
   state.students = saved.students || [];
+  state.syncQueue = saved.syncQueue || [];
+  state.databaseEndpoint = localStorage.getItem(databaseEndpointKey) || saved.databaseEndpoint || "";
 }
 
 function saveData() {
   localStorage.setItem(
     storageKey,
-    JSON.stringify({ records: state.records, students: state.students })
+    JSON.stringify({
+      records: state.records,
+      students: state.students,
+      syncQueue: state.syncQueue,
+      databaseEndpoint: state.databaseEndpoint
+    })
   );
+  localStorage.setItem(databaseEndpointKey, state.databaseEndpoint);
 }
 
 function showView(view) {
@@ -205,6 +216,7 @@ function submitRound() {
   state.records.push(record);
   updateIsland(question, roundScore);
   saveData();
+  queueRecordSync(record);
   appendLog(record, opponentRoundScore);
   updateMatchPanel();
 
@@ -301,6 +313,7 @@ function renderTeacher() {
   $("#metric-rounds").textContent = state.records.length;
   $("#metric-average").textContent = average;
   $("#metric-weak").textContent = weakTopic || "尚無";
+  renderDatabaseStatus();
   $("#record-table").innerHTML = state.records.length
     ? state.records
         .slice()
@@ -319,6 +332,82 @@ function renderTeacher() {
         )
         .join("")
     : `<tr><td colspan="6">尚無作答紀錄。</td></tr>`;
+}
+
+function renderDatabaseStatus() {
+  const endpointInput = $("#database-endpoint");
+  const status = $("#database-status");
+  if (!endpointInput || !status) return;
+  endpointInput.value = state.databaseEndpoint;
+  const pending = state.syncQueue.length;
+  if (!state.databaseEndpoint) {
+    status.textContent = `尚未設定資料庫端點，${pending} 筆紀錄等待同步。`;
+    return;
+  }
+  status.textContent = pending
+    ? `已設定資料庫端點，尚有 ${pending} 筆紀錄等待同步。`
+    : "已設定資料庫端點，目前沒有等待同步的紀錄。";
+}
+
+function buildDatabasePayload(record) {
+  return {
+    app: "future-island",
+    version: "prototype-20260508",
+    record,
+    student: {
+      id: record.studentId,
+      name: record.studentName,
+      className: record.className,
+      seat: record.seat
+    }
+  };
+}
+
+function queueRecordSync(record) {
+  if (!state.syncQueue.includes(record.id)) state.syncQueue.push(record.id);
+  saveData();
+  if (state.databaseEndpoint) syncPendingRecords({ silent: true });
+}
+
+async function syncPendingRecords(options = {}) {
+  if (!state.databaseEndpoint) {
+    if (!options.silent) alert("請先貼上資料庫 Web App URL，並按「儲存端點」。");
+    renderDatabaseStatus();
+    return;
+  }
+
+  const pendingRecords = state.syncQueue
+    .map((id) => state.records.find((record) => record.id === id))
+    .filter(Boolean);
+
+  if (!pendingRecords.length) {
+    renderDatabaseStatus();
+    if (!options.silent) alert("目前沒有需要同步的紀錄。");
+    return;
+  }
+
+  const syncedIds = [];
+  for (const record of pendingRecords) {
+    try {
+      await fetch(state.databaseEndpoint, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(buildDatabasePayload(record))
+      });
+      record.syncedAt = new Date().toISOString();
+      syncedIds.push(record.id);
+    } catch (error) {
+      record.syncError = error.message;
+      if (!options.silent) alert(`同步失敗：${error.message}`);
+      break;
+    }
+  }
+
+  state.syncQueue = state.syncQueue.filter((id) => !syncedIds.includes(id));
+  saveData();
+  renderDatabaseStatus();
+  if (!options.silent) alert(`已同步 ${syncedIds.length} 筆紀錄。`);
 }
 
 function findWeakTopic(records = state.records) {
@@ -433,10 +522,18 @@ function bindEvents() {
     if (!confirm("確定要清除所有本機示範紀錄嗎？")) return;
     state.records = [];
     state.students = [];
+    state.syncQueue = [];
     saveData();
     renderTeacher();
     renderLeaderboard();
   });
+  $("#save-database-endpoint").addEventListener("click", () => {
+    state.databaseEndpoint = $("#database-endpoint").value.trim();
+    saveData();
+    renderDatabaseStatus();
+    alert(state.databaseEndpoint ? "資料庫端點已儲存。" : "已清除資料庫端點。");
+  });
+  $("#sync-database").addEventListener("click", () => syncPendingRecords());
   $("#print-worksheet").addEventListener("click", () => window.print());
 }
 
