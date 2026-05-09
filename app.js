@@ -59,6 +59,8 @@ const questions = [
 const demoOpponents = ["晨希", "品安", "宥廷", "語晴", "柏翰", "苡柔", "承恩", "若妍"];
 const storageKey = "future-island-prototype";
 const databaseEndpointKey = "future-island-database-endpoint";
+const defaultDatabaseEndpoint =
+  "https://script.google.com/macros/s/AKfycbx_MpeDOMgPOxsVI-MjZ66579OfEvkbg0yxY491Ai1evRyZPR8w9KEQcc7TqV3kvLc/exec";
 
 const state = {
   view: "login",
@@ -87,7 +89,8 @@ function loadData() {
   state.records = saved.records || [];
   state.students = saved.students || [];
   state.syncQueue = saved.syncQueue || [];
-  state.databaseEndpoint = localStorage.getItem(databaseEndpointKey) || saved.databaseEndpoint || "";
+  state.databaseEndpoint =
+    localStorage.getItem(databaseEndpointKey) || saved.databaseEndpoint || defaultDatabaseEndpoint;
 }
 
 function saveData() {
