@@ -557,4 +557,3 @@ function bindEvents() {
 loadData();
 bindEvents();
 renderLeaderboard();
-renderTeacher();
