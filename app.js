@@ -61,6 +61,7 @@ const storageKey = "future-island-prototype";
 const databaseEndpointKey = "future-island-database-endpoint";
 const defaultDatabaseEndpoint =
   "https://script.google.com/macros/s/AKfycbx_MpeDOMgPOxsVI-MjZ66579OfEvkbg0yxY491Ai1evRyZPR8w9KEQcc7TqV3kvLc/exec";
+const teacherPassword = "888";
 
 const state = {
   view: "login",
@@ -75,6 +76,7 @@ const state = {
   students: [],
   databaseEndpoint: "",
   syncQueue: [],
+  teacherAuthenticated: false,
   board: "score",
   timerId: null,
   seconds: 60,
@@ -107,12 +109,24 @@ function saveData() {
 }
 
 function showView(view) {
+  if (view === "teacher" && !requestTeacherAccess()) return;
   state.view = view;
   $$(".view").forEach((el) => el.classList.toggle("active", el.id === `${view}-view`));
   $$(".tab").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   if (view === "leaderboard") renderLeaderboard();
   if (view === "teacher") renderTeacher();
   if (view === "worksheet") renderWorksheet();
+}
+
+function requestTeacherAccess() {
+  if (state.teacherAuthenticated) return true;
+  const input = prompt("請輸入教師後台密碼");
+  if (input === teacherPassword) {
+    state.teacherAuthenticated = true;
+    return true;
+  }
+  if (input !== null) alert("密碼錯誤，無法進入教師分析。");
+  return false;
 }
 
 function enableGameTabs() {
