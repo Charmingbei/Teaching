@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>科技尾巴偵探局｜第一節互動活動</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">第一節小組討論活動</p>
+          <h1>科技尾巴偵探局</h1>
+          <p class="subtitle">找出那條看不見的尾巴</p>
+          <div class="hero-actions">
+            <button id="startBtn" class="primary-btn">開始辦案</button>
+            <button id="resetBtn" class="soft-btn">重置活動</button>
+          </div>
+        </div>
+        <div class="storybook-scene" aria-hidden="true">
+          <div class="sun"></div>
+          <div class="hill hill-one"></div>
+          <div class="hill hill-two"></div>
+          <div class="kid">
+            <span class="head"></span>
+            <span class="body"></span>
+            <span class="tail"></span>
+          </div>
+          <div class="floating-card card-one">留言</div>
+          <div class="floating-card card-two">照片</div>
+          <div class="floating-card card-three">按讚</div>
+        </div>
+      </section>
+
+      <section class="rule-strip">
+        <div><strong>1</strong><span>選小組案件</span></div>
+        <div><strong>2</strong><span>找出尾巴從哪裡長出來</span></div>
+        <div><strong>3</strong><span>判斷尾巴碰到誰</span></div>
+        <div><strong>4</strong><span>設計修復方法</span></div>
+      </section>
+
+      <section class="workspace">
+        <aside class="panel side-panel">
+          <div class="panel-title">
+            <span>小組案件</span>
+            <small>四組各一題</small>
+          </div>
+          <div id="groupTabs" class="group-tabs"></div>
+
+          <div class="teacher-note">
+            <p class="label">教師引導語</p>
+            <p>今天不是要害怕網路，而是學會看見：我的留言、照片、按讚、分享，都可能留下影響。</p>
+          </div>
+        </aside>
+
+        <section class="panel case-panel">
+          <div class="panel-title">
+            <span id="caseTitle">案件讀取中</span>
+            <small id="caseType">科技尾巴案件</small>
+          </div>
+          <div id="caseStory" class="case-story"></div>
+
+          <div class="detective-board">
+            <div class="board-section">
+              <label for="tailAction">1. 尾巴從哪裡長出來？</label>
+              <select id="tailAction">
+                <option value="">請選擇</option>
+                <option>留言</option>
+                <option>貼照片</option>
+                <option>按讚</option>
+                <option>分享</option>
+                <option>截圖</option>
+                <option>轉傳</option>
+              </select>
+              <textarea id="tailReason" rows="3" placeholder="我們認為這條尾巴是因為..."></textarea>
+            </div>
+
+            <div class="board-section">
+              <label>2. 尾巴碰到了誰？</label>
+              <div id="peopleChoices" class="choice-grid"></div>
+            </div>
+
+            <div class="board-section">
+              <label>3. 尾巴溫度計</label>
+              <div id="temperatureChoices" class="temperature-grid"></div>
+            </div>
+
+            <div class="board-section">
+              <label>4. 尾巴修復工具箱</label>
+              <div id="repairChoices" class="choice-grid"></div>
+              <textarea id="repairPlan" rows="3" placeholder="我們決定這樣修復..."></textarea>
+            </div>
+
+            <div class="board-section full">
+              <label for="goldenSentence">5. 我們的科技尾巴金句</label>
+              <input id="goldenSentence" type="text" placeholder="發布前，我們要先想..." />
+            </div>
+
+            <div class="submit-area full">
+              <button id="submitBtn" class="primary-btn">提交本組案件板</button>
+              <span id="submitHint">完成後提交，老師後台會看到你們的討論。</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel gallery-panel">
+        <div class="panel-title">
+          <span>班級尾巴森林</span>
+          <small>各組提交後會長出一片葉子</small>
+        </div>
+        <div id="forest" class="forest"></div>
+      </section>
+
+      <section class="panel teacher-dashboard">
+        <div class="panel-title">
+          <span>教師後台</span>
+          <small id="dashboardStatus">需要教師密碼</small>
+        </div>
+        <div id="dashboardLock" class="dashboard-lock">
+          <div>
+            <strong>教師專用區</strong>
+            <p>輸入密碼後，可查看四組完整案件板，帶全班討論。</p>
+          </div>
+          <div class="password-row">
+            <input id="teacherPassword" type="password" inputmode="numeric" placeholder="輸入教師密碼" />
+            <button id="unlockDashboard" class="primary-btn">進入教師後台</button>
+          </div>
+          <p id="passwordHint" class="password-hint">提示：教師密碼為三位數。</p>
+        </div>
+        <div id="dashboardContent" class="hidden">
+          <div class="dashboard-toolbar">
+            <button id="lockDashboard" class="soft-btn">鎖定後台</button>
+            <button id="clearBtn" class="soft-btn">清除提交紀錄</button>
+          </div>
+          <div id="submissionBoard" class="submission-board"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
