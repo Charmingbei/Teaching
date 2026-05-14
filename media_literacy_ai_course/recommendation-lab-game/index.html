@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推薦怪圈實驗室｜第二節互動遊戲</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">第二節課操作遊戲</p>
+          <h1>推薦怪圈實驗室</h1>
+          <p class="subtitle">我點了什麼，AI就以為我喜歡什麼</p>
+          <div class="hero-actions">
+            <button id="startGame" class="primary-btn">開始實驗</button>
+            <button id="resetGame" class="ghost-btn">重置全班</button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <img src="./assets/teacher-ip.jpg" alt="教師角色" />
+        </div>
+      </section>
+
+      <section class="lab-grid">
+        <aside class="panel teacher-panel">
+          <div class="panel-title">
+            <span>教師控制台</span>
+            <small id="roundLabel">第0回合</small>
+          </div>
+
+          <div class="goal-box">
+            <p class="label">今天的任務</p>
+            <strong>幫小宇守住 5 分鐘目標</strong>
+            <p>小宇只想學會畫恐龍。看看每一次點選，會不會把他帶到別的地方。</p>
+          </div>
+
+          <div class="group-tabs" id="groupTabs" aria-label="選擇組別"></div>
+
+          <div class="round-buttons">
+            <button data-round="1">第1回合 初始推薦</button>
+            <button data-round="2">第2回合 演算法加深</button>
+            <button data-round="3">第3回合 怪圈事件</button>
+            <button data-round="4">第4回合 選擇權挑戰</button>
+          </div>
+
+          <div class="teacher-note">
+            <p class="label">這一回合怎麼玩</p>
+            <p id="teacherPrompt">請先按「開始實驗」，再讓各組選擇第一張內容卡。</p>
+          </div>
+        </aside>
+
+        <section class="panel play-panel">
+          <div class="panel-title">
+            <span id="activeGroupTitle">第一組實驗桌</span>
+            <small id="activeRole">角色：使用者小宇、平台、廣告商、觀察員</small>
+          </div>
+
+          <div class="round-status">
+            <div>
+              <p class="label">闖關任務</p>
+              <strong id="taskTitle">目標設定</strong>
+            </div>
+            <div>
+              <p class="label">已觀看時間</p>
+              <strong id="timeSpent">0 分鐘</strong>
+            </div>
+          </div>
+
+          <div class="kid-rule">
+            <strong>小提醒</strong>
+            <span>點越多、停越久、越喜歡，AI推薦機器就越會推相似內容。</span>
+          </div>
+
+          <div id="contentArea" class="content-area"></div>
+        </section>
+
+        <aside class="panel score-panel">
+          <div class="panel-title">
+            <span>AI推薦機器</span>
+            <small>它正在猜小宇喜歡什麼</small>
+          </div>
+          <div id="scoreBoard" class="score-board"></div>
+          <div class="top-tag">
+            <p class="label">AI現在最想推</p>
+            <strong id="topTag">尚未產生</strong>
+          </div>
+          <div class="ad-box">
+            <p class="label">可能跟著出現</p>
+            <strong id="adSuggestion">尚未判斷</strong>
+          </div>
+        </aside>
+      </section>
+
+      <section class="panel reflection-panel">
+        <div class="panel-title">
+          <span>小組紀錄與討論</span>
+          <small>投影全班共討</small>
+        </div>
+        <div class="reflection-grid">
+          <div>
+            <p class="label">小宇被帶去哪裡了？</p>
+            <ol id="pathList" class="path-list"></ol>
+          </div>
+          <div>
+            <p class="label">想一想</p>
+            <div id="discussionCards" class="discussion-cards"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel teacher-dashboard">
+        <div class="panel-title">
+          <span>教師後台</span>
+          <small id="dashboardStatus">需要教師密碼</small>
+        </div>
+        <div id="dashboardLock" class="dashboard-lock">
+          <div>
+            <strong>教師專用區</strong>
+            <p>請輸入密碼才能查看各組提交內容。</p>
+          </div>
+          <div class="password-row">
+            <input id="teacherPassword" type="password" inputmode="numeric" placeholder="輸入教師密碼" />
+            <button id="unlockDashboard" class="primary-btn">進入教師後台</button>
+          </div>
+          <p id="passwordHint" class="password-hint">提示：課堂教師密碼為三位數。</p>
+        </div>
+        <div id="dashboardContent" class="dashboard-content hidden">
+          <div class="dashboard-toolbar">
+            <button id="showAllSubmissions" class="primary-btn">顯示全部小組</button>
+            <button id="lockDashboard" class="ghost-btn">鎖定後台</button>
+            <button id="clearSubmissions" class="ghost-btn">清除提交紀錄</button>
+          </div>
+          <div id="submissionBoard" class="submission-board"></div>
+        </div>
+      </section>
+    </main>
+
+    <template id="contentCardTemplate">
+      <article class="content-card">
+        <div class="card-head">
+          <span class="card-type"></span>
+          <span class="card-time"></span>
+        </div>
+        <h3></h3>
+        <p></p>
+        <div class="tag-row"></div>
+        <div class="behavior-row"></div>
+      </article>
+    </template>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
