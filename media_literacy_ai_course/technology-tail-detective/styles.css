@@ -125,6 +125,22 @@ button:hover {
   justify-content: center;
   background: transparent;
   overflow: visible;
+  isolation: isolate;
+}
+
+.ip-hero-art::before {
+  content: "";
+  position: absolute;
+  inset: 8px -8px -2px 20px;
+  z-index: -1;
+  border-radius: 58% 42% 52% 48% / 44% 56% 42% 58%;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 229, 134, 0.42), transparent 34%),
+    radial-gradient(circle at 70% 34%, rgba(112, 205, 192, 0.28), transparent 38%),
+    radial-gradient(circle at 50% 72%, rgba(255, 159, 126, 0.24), transparent 44%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(238, 251, 232, 0.32));
+  filter: blur(2px);
+  transform: rotate(-3deg);
 }
 
 .ip-hero-art img {
@@ -133,7 +149,9 @@ button:hover {
   max-height: 275px;
   object-fit: contain;
   border-radius: 0;
-  box-shadow: none;
+  filter: drop-shadow(0 16px 22px rgba(74, 91, 73, 0.16)) saturate(1.04);
+  -webkit-mask-image: radial-gradient(ellipse 78% 86% at 52% 51%, #000 62%, rgba(0, 0, 0, 0.82) 74%, transparent 100%);
+  mask-image: radial-gradient(ellipse 78% 86% at 52% 51%, #000 62%, rgba(0, 0, 0, 0.82) 74%, transparent 100%);
 }
 
 .rule-strip {
