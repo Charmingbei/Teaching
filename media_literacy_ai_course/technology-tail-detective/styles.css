@@ -117,106 +117,26 @@ button:hover {
   transform: translateY(-1px);
 }
 
-.ip-scene {
+.ip-hero-art {
   position: relative;
   height: 270px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 26px;
-  background: linear-gradient(180deg, var(--sky) 0%, #e7f8ff 56%, #c9edb7 57%, #aee09d 100%);
+  background:
+    radial-gradient(circle at 78% 18%, rgba(248, 201, 78, 0.32) 0 46px, transparent 48px),
+    linear-gradient(180deg, #e8f8ff 0%, #f4fbef 100%);
   overflow: hidden;
 }
 
-.sun {
-  position: absolute;
-  top: 24px;
-  right: 34px;
-  width: 76px;
-  height: 76px;
-  border-radius: 50%;
-  background: #ffd869;
-  box-shadow: 0 0 0 16px rgba(255, 216, 105, 0.25);
-}
-
-.hill {
-  position: absolute;
-  bottom: -70px;
-  border-radius: 50%;
-  background: rgba(95, 191, 133, 0.88);
-}
-
-.hill-one {
-  left: -60px;
-  width: 320px;
-  height: 170px;
-}
-
-.hill-two {
-  right: -70px;
-  width: 370px;
-  height: 190px;
-  background: rgba(132, 207, 108, 0.82);
-}
-
-.ip-frame {
-  position: absolute;
-  left: 96px;
-  bottom: 28px;
-  width: 190px;
-  height: 190px;
-  display: grid;
-  place-items: center;
-  border: 6px solid rgba(37, 51, 72, 0.9);
-  border-radius: 50%;
-  background: rgba(255, 250, 240, 0.95);
-  box-shadow: 0 16px 32px rgba(37, 51, 72, 0.18);
-  overflow: hidden;
-}
-
-.ip-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.tail-ribbon {
-  position: absolute;
-  left: 250px;
-  bottom: 88px;
-  width: 118px;
-  height: 46px;
-  border: 6px solid rgba(37, 51, 72, 0.88);
-  border-left: 0;
-  border-bottom: 0;
-  border-radius: 0 90px 0 0;
-  transform: rotate(14deg);
-  background: transparent;
-}
-
-.floating-card {
-  position: absolute;
-  min-width: 62px;
-  padding: 8px 12px;
-  border: 3px solid rgba(37, 51, 72, 0.76);
-  border-radius: 16px;
-  background: rgba(255, 250, 240, 0.92);
-  font-weight: 900;
-}
-
-.card-one {
-  left: 44px;
-  top: 46px;
-  transform: rotate(-8deg);
-}
-
-.card-two {
-  right: 130px;
-  bottom: 74px;
-  transform: rotate(7deg);
-}
-
-.card-three {
-  right: 34px;
-  top: 120px;
-  transform: rotate(-5deg);
+.ip-hero-art img {
+  width: min(82%, 330px);
+  height: auto;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 22px;
+  box-shadow: 0 14px 28px rgba(37, 51, 72, 0.14);
 }
 
 .rule-strip {
@@ -552,7 +472,7 @@ input:focus {
     grid-template-columns: 1fr;
   }
 
-  .ip-scene {
+  .ip-hero-art {
     display: none;
   }
 
