@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>低年級國語說故事陪伴教練</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Grade 1-2 Story Coach</p>
+          <h1>低年級國語說故事陪伴教練</h1>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <section class="practice-panel" aria-label="練習錄影">
+          <div class="video-frame">
+            <video id="camera" autoplay muted playsinline></video>
+            <div class="camera-overlay">
+              <p id="camera-status">尚未開啟鏡頭</p>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <button id="camera-btn" class="primary-btn" type="button">開啟鏡頭</button>
+            <button id="record-btn" class="danger-btn" type="button" disabled>開始練習</button>
+            <button id="finish-btn" type="button" disabled>完成分析</button>
+            <div class="timer" id="timer">00:00</div>
+          </div>
+
+          <div class="story-box">
+            <div class="field">
+              <label for="student-name">練習者</label>
+              <input id="student-name" type="text" value="小小故事家" />
+            </div>
+          </div>
+
+          <section class="cloud-box" aria-label="雲端紀錄設定">
+            <div class="field">
+              <label for="cloud-endpoint">雲端紀錄位置</label>
+              <input id="cloud-endpoint" type="url" placeholder="貼上 Google Apps Script Web App URL" />
+            </div>
+            <button id="save-cloud-btn" type="button">儲存位置</button>
+            <p id="cloud-status">尚未設定雲端位置</p>
+          </section>
+        </section>
+
+        <aside class="coach-panel" aria-label="教練分析">
+          <nav class="tabs" aria-label="分析分頁">
+            <button class="tab active" type="button" data-tab="live">即時觀察</button>
+            <button class="tab" type="button" data-tab="report">展現分析</button>
+            <button class="tab" type="button" data-tab="plan">練習處方</button>
+          </nav>
+
+          <section id="live-tab" class="tab-page active">
+            <div class="score-meter">
+              <span>鏡頭展現穩定度</span>
+              <strong id="readiness-score">--</strong>
+            </div>
+            <div class="signal-grid">
+              <article>
+                <span>神情</span>
+                <strong id="face-signal">待觀察</strong>
+                <p>臉部朝向、表情亮度、是否自然看向鏡頭。</p>
+              </article>
+              <article>
+                <span>姿態</span>
+                <strong id="posture-signal">待觀察</strong>
+                <p>站姿穩定、肩膀放鬆、身體是否過度晃動。</p>
+              </article>
+              <article>
+                <span>視線</span>
+                <strong id="voice-signal">待觀察</strong>
+                <p>是否面向觀眾，眼神能不能停留在鏡頭方向。</p>
+              </article>
+              <article>
+                <span>舞台感</span>
+                <strong id="story-signal">待觀察</strong>
+                <p>入鏡位置、表情節奏、整體是否大方自然。</p>
+              </article>
+            </div>
+            <ul id="live-cues" class="cue-list"></ul>
+          </section>
+
+          <section id="report-tab" class="tab-page">
+            <h2>鏡頭展現分析</h2>
+            <div id="rubric-results" class="rubric-results"></div>
+          </section>
+
+          <section id="plan-tab" class="tab-page">
+            <h2>練習處方</h2>
+            <ol id="training-plan" class="training-plan"></ol>
+            <h2 class="record-title">練習紀錄</h2>
+            <div id="record-list" class="record-list"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
