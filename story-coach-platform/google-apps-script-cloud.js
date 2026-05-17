@@ -1,4 +1,4 @@
-const SPREADSHEET_ID = "請填入你的試算表 ID";
+const SPREADSHEET_ID = "1MPVxE4HdOLHQvfZJaKx02V7XYblBSIUIkAHKyC9iJ6U";
 const SHEET_NAME = "camera_coach_records";
 
 function doPost(e) {

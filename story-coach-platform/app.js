@@ -19,8 +19,9 @@ const uploadStatus = document.querySelector("#upload-status");
 
 const storageKey = "story-camera-coach-records";
 const endpointKey = "story-camera-coach-endpoint";
-const defaultCloudEndpoint =
-  "https://script.google.com/macros/s/AKfycbx_MpeDOMgPOxsVI-MjZ66579OfEvkbg0yxY491Ai1evRyZPR8w9KEQcc7TqV3kvLc/exec";
+const defaultCloudEndpoint = "";
+const dedicatedSheetUrl =
+  "https://docs.google.com/spreadsheets/d/1MPVxE4HdOLHQvfZJaKx02V7XYblBSIUIkAHKyC9iJ6U/edit";
 
 const state = {
   stream: null,
@@ -53,7 +54,9 @@ document.querySelectorAll(".tab").forEach((button) => {
 function loadRecords() {
   state.records = JSON.parse(localStorage.getItem(storageKey) || "[]");
   cloudEndpoint.value = localStorage.getItem(endpointKey) || defaultCloudEndpoint;
-  cloudStatus.textContent = "已設定預設雲端位置";
+  cloudStatus.innerHTML = cloudEndpoint.value
+    ? "已設定雲端位置"
+    : `專用試算表已建立：<a href="${dedicatedSheetUrl}" target="_blank" rel="noreferrer">開啟紀錄表</a>`;
   renderRecords();
 }
 
