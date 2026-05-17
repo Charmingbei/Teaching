@@ -119,24 +119,21 @@ button:hover {
 
 .ip-hero-art {
   position: relative;
-  height: 270px;
+  height: 285px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 26px;
-  background:
-    radial-gradient(circle at 78% 18%, rgba(248, 201, 78, 0.32) 0 46px, transparent 48px),
-    linear-gradient(180deg, #e8f8ff 0%, #f4fbef 100%);
-  overflow: hidden;
+  background: transparent;
+  overflow: visible;
 }
 
 .ip-hero-art img {
-  width: min(82%, 330px);
+  width: min(92%, 380px);
   height: auto;
-  max-height: 240px;
+  max-height: 275px;
   object-fit: contain;
-  border-radius: 22px;
-  box-shadow: 0 14px 28px rgba(37, 51, 72, 0.14);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .rule-strip {
