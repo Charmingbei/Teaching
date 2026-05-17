@@ -19,6 +19,8 @@ const uploadStatus = document.querySelector("#upload-status");
 
 const storageKey = "story-camera-coach-records";
 const endpointKey = "story-camera-coach-endpoint";
+const defaultCloudEndpoint =
+  "https://script.google.com/macros/s/AKfycbx_MpeDOMgPOxsVI-MjZ66579OfEvkbg0yxY491Ai1evRyZPR8w9KEQcc7TqV3kvLc/exec";
 
 const state = {
   stream: null,
@@ -50,7 +52,8 @@ document.querySelectorAll(".tab").forEach((button) => {
 
 function loadRecords() {
   state.records = JSON.parse(localStorage.getItem(storageKey) || "[]");
-  cloudEndpoint.value = localStorage.getItem(endpointKey) || "";
+  cloudEndpoint.value = localStorage.getItem(endpointKey) || defaultCloudEndpoint;
+  cloudStatus.textContent = "已設定預設雲端位置";
   renderRecords();
 }
 
@@ -353,6 +356,11 @@ function buildRecord(report, suggestions, metadata = {}) {
     durationSeconds: report.seconds,
     source: metadata.source || "即時鏡頭",
     mediaName: metadata.mediaName || "",
+    score: report.total,
+    responseSeconds: report.seconds,
+    reflection: suggestions.join("\n"),
+    questionTitle: metadata.source || "鏡頭展現分析",
+    time: now.toISOString(),
     suggestions
   };
 }
