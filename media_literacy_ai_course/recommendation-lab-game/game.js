@@ -9,6 +9,7 @@ const groups = [
   { id: 5, name: "第六組", focus: "小宇可以怎麼訓練自己的推薦？" },
 ];
 
+const lessonTitle = "第二節：推薦怪圈實驗室";
 const behaviors = [
   { key: "skip", label: "略過", kid: "我不想看", score: 0, minutes: 1, hint: "AI幾乎不會記住這個主題" },
   { key: "open", label: "看一下", kid: "點開看看", score: 1, minutes: 5, hint: "AI開始覺得你可能有興趣" },
@@ -157,6 +158,7 @@ let activeGroup = 0;
 let state = groups.map(() => createGroupState());
 let submissions = loadSubmissions();
 let dashboardUnlocked = sessionStorage.getItem("recommendationLabTeacherUnlocked") === "true";
+let lessonRecord = loadLessonRecord();
 
 function createGroupState() {
   return {
@@ -179,6 +181,23 @@ function loadSubmissions() {
 
 function saveSubmissions() {
   localStorage.setItem("recommendationLabSubmissions", JSON.stringify(submissions));
+}
+
+function getToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadLessonRecord() {
+  try {
+    const saved = localStorage.getItem("recommendationLabLessonRecord");
+    return saved ? JSON.parse(saved) : { date: getToday(), className: "", cloudEndpoint: "" };
+  } catch {
+    return { date: getToday(), className: "", cloudEndpoint: "" };
+  }
+}
+
+function saveLessonRecord() {
+  localStorage.setItem("recommendationLabLessonRecord", JSON.stringify(lessonRecord));
 }
 
 function getTopTag(groupState = state[activeGroup]) {
@@ -249,6 +268,9 @@ function submitGroupAnswers() {
   }
 
   submissions[activeGroup] = {
+    lessonTitle,
+    lessonDate: lessonRecord.date,
+    className: lessonRecord.className,
     groupName: groups[activeGroup].name,
     time: new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }),
     topTag: getTopTag(groupState) || "尚未產生",
@@ -472,6 +494,7 @@ function renderSubmissionBoard() {
   renderDashboardLock();
   if (!dashboardUnlocked) return;
 
+  renderLessonRecord();
   const board = document.querySelector("#submissionBoard");
   board.innerHTML = "";
 
@@ -497,6 +520,7 @@ function renderSubmissionBoard() {
         <strong>${submission.groupName}</strong>
         <span>${submission.time} 提交</span>
       </div>
+      <p class="record-line">${submission.lessonDate || lessonRecord.date}｜${submission.className || lessonRecord.className || "未填班級"}</p>
       <div class="submission-meta">
         <span>AI最想推：${submission.topTag}</span>
         <span>觀看時間：${submission.watchTime}分鐘</span>
@@ -526,6 +550,108 @@ function renderDashboardLock() {
   lock.classList.toggle("hidden", dashboardUnlocked);
   content.classList.toggle("hidden", !dashboardUnlocked);
   status.textContent = dashboardUnlocked ? "已解鎖，可查看各組提交內容" : "需要教師密碼";
+}
+
+function renderLessonRecord() {
+  document.querySelector("#lessonDate").value = lessonRecord.date || getToday();
+  document.querySelector("#className").value = lessonRecord.className || "";
+  document.querySelector("#cloudEndpoint").value = lessonRecord.cloudEndpoint || "";
+}
+
+function bindLessonRecordInputs() {
+  document.querySelector("#lessonDate").addEventListener("change", (event) => {
+    lessonRecord.date = event.target.value || getToday();
+    saveLessonRecord();
+  });
+  document.querySelector("#className").addEventListener("input", (event) => {
+    lessonRecord.className = event.target.value.trim();
+    saveLessonRecord();
+  });
+  document.querySelector("#cloudEndpoint").addEventListener("input", (event) => {
+    lessonRecord.cloudEndpoint = event.target.value.trim();
+    saveLessonRecord();
+  });
+}
+
+function getBackupRows() {
+  return groups.map((group) => {
+    const submission = submissions[group.id];
+    const responses = submission?.responses || [];
+    return {
+      課程: lessonTitle,
+      上課日期: submission?.lessonDate || lessonRecord.date || getToday(),
+      班級: submission?.className || lessonRecord.className || "",
+      組別: group.name,
+      觀察焦點: group.focus,
+      提交時間: submission?.time || "",
+      AI最想推: submission?.topTag || "",
+      觀看時間: submission?.watchTime ?? "",
+      推薦路徑: submission?.path?.join(" / ") || "",
+      想一想1題目: responses[0]?.question || "",
+      想一想1答案: responses[0]?.answer || "",
+      想一想2題目: responses[1]?.question || "",
+      想一想2答案: responses[1]?.answer || "",
+      想一想3題目: responses[2]?.question || "",
+      想一想3答案: responses[2]?.answer || "",
+    };
+  });
+}
+
+function getBackupPayload() {
+  return {
+    lessonTitle,
+    lessonDate: lessonRecord.date || getToday(),
+    className: lessonRecord.className || "",
+    exportedAt: new Date().toISOString(),
+    rows: getBackupRows(),
+    submissions,
+  };
+}
+
+function csvEscape(value) {
+  return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadCsvBackup() {
+  const rows = getBackupRows();
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.map(csvEscape).join(","), ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(","))].join("\n");
+  downloadFile(`推薦怪圈實驗室_${lessonRecord.date || getToday()}_${lessonRecord.className || "未填班級"}.csv`, `\ufeff${csv}`, "text/csv;charset=utf-8");
+}
+
+function downloadJsonBackup() {
+  downloadFile(`推薦怪圈實驗室_${lessonRecord.date || getToday()}_${lessonRecord.className || "未填班級"}.json`, JSON.stringify(getBackupPayload(), null, 2), "application/json;charset=utf-8");
+}
+
+async function uploadCloudBackup() {
+  const status = document.querySelector("#cloudStatus");
+  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  if (!endpoint) {
+    status.textContent = "請先貼上雲端備份網址，再按上傳。";
+    return;
+  }
+  status.textContent = "正在送出雲端備份...";
+  try {
+    await fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(getBackupPayload()),
+    });
+    status.textContent = "已送出雲端備份，請到雲端試算表確認是否新增。";
+  } catch {
+    status.textContent = "上傳失敗，請檢查網路或雲端備份網址。";
+  }
 }
 
 function renderRoundButtons() {
@@ -624,5 +750,11 @@ document.querySelector("#clearSubmissions").addEventListener("click", () => {
   saveSubmissions();
   render();
 });
+
+bindLessonRecordInputs();
+
+document.querySelector("#downloadCsv").addEventListener("click", downloadCsvBackup);
+document.querySelector("#downloadJson").addEventListener("click", downloadJsonBackup);
+document.querySelector("#uploadCloud").addEventListener("click", uploadCloudBackup);
 
 render();

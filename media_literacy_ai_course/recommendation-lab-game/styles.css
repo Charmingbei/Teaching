@@ -649,6 +649,72 @@ button:hover {
   font-weight: 800;
 }
 
+.record-panel,
+.cloud-panel {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.record-panel {
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.7fr) minmax(180px, 0.9fr);
+  align-items: end;
+}
+
+.record-panel strong {
+  display: block;
+  font-size: 24px;
+}
+
+.record-panel label,
+.cloud-panel label {
+  display: grid;
+  gap: 8px;
+  color: var(--pink);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.record-panel input,
+.cloud-panel input {
+  min-height: 50px;
+  width: 100%;
+  padding: 0 15px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  background: var(--white);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.record-panel input:focus,
+.cloud-panel input:focus {
+  outline: 0;
+  border-color: var(--pink);
+  box-shadow: 0 0 0 4px rgba(255, 111, 158, 0.16);
+}
+
+.cloud-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.cloud-panel p,
+.record-line {
+  margin: 0;
+  color: var(--sub);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .dashboard-toolbar {
   display: flex;
   gap: 12px;
@@ -781,7 +847,9 @@ button:hover {
   .discussion-cards,
   .round-guide,
   .start-steps,
-  .submission-board {
+  .submission-board,
+  .record-panel,
+  .cloud-row {
     grid-template-columns: 1fr;
   }
 

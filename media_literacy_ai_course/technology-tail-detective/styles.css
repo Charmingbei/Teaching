@@ -446,6 +446,71 @@ input:focus {
   font-weight: 900;
 }
 
+.record-panel,
+.cloud-panel {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2px solid rgba(46, 143, 98, 0.12);
+}
+
+.record-panel {
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.7fr) minmax(180px, 0.9fr);
+  align-items: end;
+}
+
+.record-panel strong {
+  display: block;
+  font-size: 24px;
+}
+
+.record-panel label,
+.cloud-panel label {
+  display: grid;
+  gap: 8px;
+  color: var(--leaf-dark);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.record-panel input,
+.cloud-panel input {
+  min-height: 48px;
+  width: 100%;
+  padding: 0 14px;
+  border: 2px solid rgba(37, 51, 72, 0.12);
+  border-radius: 16px;
+  color: var(--ink);
+  background: var(--paper);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.record-panel input:focus,
+.cloud-panel input:focus {
+  outline: 0;
+  border-color: var(--leaf-dark);
+  box-shadow: 0 0 0 4px rgba(46, 143, 98, 0.12);
+}
+
+.cloud-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.cloud-panel p {
+  margin: 0;
+  color: var(--sub);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .submission-board {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -517,6 +582,8 @@ input:focus {
   .temperature-grid,
   .forest,
   .submission-board,
+  .record-panel,
+  .cloud-row,
   .password-row {
     grid-template-columns: 1fr;
   }

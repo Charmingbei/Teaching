@@ -120,10 +120,34 @@
           <p id="passwordHint" class="password-hint">提示：教師密碼為三位數。</p>
         </div>
         <div id="dashboardContent" class="hidden">
+          <section class="record-panel">
+            <div>
+              <p class="label">上課紀錄</p>
+              <strong>第一節活動備份資料</strong>
+            </div>
+            <label>
+              上課日期
+              <input id="lessonDate" type="date" />
+            </label>
+            <label>
+              班級
+              <input id="className" type="text" placeholder="例：四年一班" />
+            </label>
+          </section>
           <div class="dashboard-toolbar">
             <button id="lockDashboard" class="soft-btn">鎖定後台</button>
+            <button id="downloadCsv" class="soft-btn">下載CSV備份</button>
+            <button id="downloadJson" class="soft-btn">下載JSON備份</button>
             <button id="clearBtn" class="soft-btn">清除提交紀錄</button>
           </div>
+          <section class="cloud-panel">
+            <label for="cloudEndpoint">雲端備份網址</label>
+            <div class="cloud-row">
+              <input id="cloudEndpoint" type="url" placeholder="貼上 Google Sheet Apps Script 網址" />
+              <button id="uploadCloud" class="primary-btn">上傳雲端備份</button>
+            </div>
+            <p id="cloudStatus">可先下載備份檔；若已設定雲端網址，可一鍵送出紀錄。</p>
+          </section>
           <div id="submissionBoard" class="submission-board"></div>
         </div>
       </section>
