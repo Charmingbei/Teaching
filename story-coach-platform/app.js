@@ -19,7 +19,8 @@ const uploadStatus = document.querySelector("#upload-status");
 
 const storageKey = "story-camera-coach-records";
 const endpointKey = "story-camera-coach-endpoint";
-const defaultCloudEndpoint = "";
+const defaultCloudEndpoint =
+  "https://script.google.com/macros/s/AKfycbzLBoNAj8TCrSGk_ZyvUzj6xzlxaqKjWIprKUFt8ARIUc_TItMEObGmS55tmOPf1bb-/exec";
 const dedicatedSheetUrl =
   "https://docs.google.com/spreadsheets/d/1MPVxE4HdOLHQvfZJaKx02V7XYblBSIUIkAHKyC9iJ6U/edit";
 
