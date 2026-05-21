@@ -94,9 +94,13 @@ function appendPayload(data) {
   const headers = getHeaders(sheet, rows[0]);
 
   rows.forEach(function(row) {
-    sheet.appendRow(headers.map(function(header) {
-      return row[header] || "";
-    }));
+    const values = headers.map(function(header) {
+      return row[header] === undefined || row[header] === null ? "" : String(row[header]);
+    });
+    const targetRow = sheet.getLastRow() + 1;
+    const range = sheet.getRange(targetRow, 1, 1, headers.length);
+    range.setNumberFormat("@");
+    range.setValues([values]);
   });
 
   return {

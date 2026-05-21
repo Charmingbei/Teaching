@@ -91,6 +91,26 @@ function getToday() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getTimeLabel() {
+  return new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+}
+
+function formatSubmissionTime(value) {
+  if (!value) return "";
+  if (value instanceof Date) return value.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+
+  const text = String(value);
+  const timeOnly = text.match(/^(\d{1,2}:\d{2}(?::\d{2})?)/);
+  if (timeOnly) return timeOnly[1];
+
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  }
+
+  return text;
+}
+
 function loadLessonRecord() {
   try {
     const saved = localStorage.getItem("tailDetectiveLessonRecord");
@@ -222,7 +242,7 @@ function submitCurrentGroup() {
     group: cases[activeGroup].group,
     title: cases[activeGroup].title,
     story: cases[activeGroup].story,
-    time: new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }),
+    time: getTimeLabel(),
   };
 
   saveSubmissions();
@@ -275,7 +295,7 @@ function renderDashboard() {
 
     card.innerHTML = `
       <strong>${submission.group}：${submission.title}</strong>
-      <p>${submission.lessonDate || lessonRecord.date}｜${submission.className || lessonRecord.className || "未填班級"}｜${submission.time} 提交</p>
+      <p>${submission.lessonDate || lessonRecord.date}｜${submission.className || lessonRecord.className || "未填班級"}｜${formatSubmissionTime(submission.time)} 提交</p>
       <b>尾巴從哪裡長出來？</b>
       <p>${submission.action}：${submission.reason}</p>
       <b>尾巴碰到了誰？</b>
@@ -304,7 +324,7 @@ function renderSubmissionOverview() {
       ? `
         <strong>${item.group}</strong>
         <span>已提交</span>
-        <p>${submission.time || "未記錄時間"}</p>
+        <p>${formatSubmissionTime(submission.time) || "未記錄時間"}</p>
         <small>${submission.goldenSentence || "已收到本組填答"}</small>
       `
       : `
@@ -366,7 +386,7 @@ function getBackupRows() {
       班級: submission?.className || lessonRecord.className || "",
       組別: item.group,
       案件: item.title,
-      提交時間: submission?.time || "",
+      提交時間: formatSubmissionTime(submission?.time) || "",
       尾巴來源: submission?.action || "",
       來源理由: submission?.reason || "",
       影響對象: submission?.people?.join("、") || "",
@@ -423,7 +443,7 @@ function getRowsForSubmission(submission) {
       班級: submission.className || lessonRecord.className || "",
       組別: submission.group,
       案件: submission.title,
-      提交時間: submission.time || "",
+      提交時間: formatSubmissionTime(submission.time) || "",
       尾巴來源: submission.action || "",
       來源理由: submission.reason || "",
       影響對象: submission.people?.join("、") || "",
@@ -603,7 +623,7 @@ function mergeCloudRows(rows) {
         group: row["組別"],
         title: row["案件"],
         story: cases.find((item) => item.group === row["組別"])?.story || "",
-        time: row["提交時間"] || "",
+        time: formatSubmissionTime(row["提交時間"]) || "",
         action: row["尾巴來源"] || "",
         reason: row["來源理由"] || "",
         people: row["影響對象"] ? row["影響對象"].split("、") : [],

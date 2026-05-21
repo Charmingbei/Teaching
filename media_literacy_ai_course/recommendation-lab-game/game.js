@@ -201,6 +201,26 @@ function getToday() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getTimeLabel() {
+  return new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+}
+
+function formatSubmissionTime(value) {
+  if (!value) return "";
+  if (value instanceof Date) return value.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+
+  const text = String(value);
+  const timeOnly = text.match(/^(\d{1,2}:\d{2}(?::\d{2})?)/);
+  if (timeOnly) return timeOnly[1];
+
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  }
+
+  return text;
+}
+
 function loadLessonRecord() {
   try {
     const saved = localStorage.getItem("recommendationLabLessonRecord");
@@ -297,7 +317,7 @@ function submitGroupAnswers() {
     lessonDate: lessonRecord.date,
     className: lessonRecord.className,
     groupName: groups[activeGroup].name,
-    time: new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }),
+    time: getTimeLabel(),
     topTag: getTopTag(groupState) || "尚未產生",
     watchTime: groupState.time,
     path: [...groupState.path],
@@ -545,7 +565,7 @@ function renderSubmissionBoard() {
     card.innerHTML = `
       <div class="submission-head">
         <strong>${submission.groupName}</strong>
-        <span>${submission.time} 提交</span>
+        <span>${formatSubmissionTime(submission.time)} 提交</span>
       </div>
       <p class="record-line">${submission.lessonDate || lessonRecord.date}｜${submission.className || lessonRecord.className || "未填班級"}</p>
       <div class="submission-meta">
@@ -583,7 +603,7 @@ function renderSubmissionOverview() {
       ? `
         <strong>${group.name}</strong>
         <span>已提交</span>
-        <p>${submission.time || "未記錄時間"}</p>
+        <p>${formatSubmissionTime(submission.time) || "未記錄時間"}</p>
         <small>AI最想推：${submission.topTag || "尚未產生"}</small>
       `
       : `
@@ -655,7 +675,7 @@ function getBackupRows() {
       班級: submission?.className || lessonRecord.className || "",
       組別: group.name,
       觀察焦點: group.focus,
-      提交時間: submission?.time || "",
+      提交時間: formatSubmissionTime(submission?.time) || "",
       AI最想推: submission?.topTag || "",
       觀看時間: submission?.watchTime ?? "",
       推薦路徑: submission?.path?.join(" / ") || "",
@@ -715,7 +735,7 @@ function getRowsForSubmission(submission) {
       班級: submission.className || lessonRecord.className || "",
       組別: submission.groupName,
       觀察焦點: groups.find((group) => group.name === submission.groupName)?.focus || "",
-      提交時間: submission.time || "",
+      提交時間: formatSubmissionTime(submission.time) || "",
       AI最想推: submission.topTag || "",
       觀看時間: submission.watchTime ?? "",
       推薦路徑: submission.path?.join(" / ") || "",
@@ -725,7 +745,7 @@ function getRowsForSubmission(submission) {
       想一想2答案: responses[1]?.answer || "",
       想一想3題目: responses[2]?.question || "",
       想一想3答案: responses[2]?.answer || "",
-      資料JSON: JSON.stringify(submission),
+      資料JSON: "",
     },
   ];
 }
@@ -741,7 +761,7 @@ function postRowsToCloud(rows, statusElement) {
     return Promise.resolve(false);
   }
   if (rows.length === 1) {
-    return submitRowsWithForm(rows);
+    return submitRowsWithJsonp(rows).then((ok) => (ok ? true : submitRowsWithForm(rows)));
   }
   return fetch(endpoint, {
     method: "POST",
@@ -760,16 +780,59 @@ function postRowsToCloud(rows, statusElement) {
     .catch(() => false);
 }
 
-function submitRowsWithForm(rows) {
+function submitRowsWithJsonp(rows) {
   const endpoint = lessonRecord.cloudEndpoint?.trim();
-  const frameName = `recommendationLabSubmitFrame_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-  const payload = JSON.stringify({
+  const callbackName = `recommendationLabSubmit_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  const url = new URL(endpoint);
+  url.searchParams.set("mode", "submit");
+  url.searchParams.set("callback", callbackName);
+  url.searchParams.set("payload", JSON.stringify({
       lessonTitle,
       lessonDate: lessonRecord.date || getToday(),
       className: lessonRecord.className || "",
       activityKey: "activity2",
       exportedAt: new Date().toISOString(),
       rows,
+  }));
+
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    const timer = window.setTimeout(() => {
+      cleanup();
+      resolve(false);
+    }, 9000);
+
+    function cleanup() {
+      window.clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = (payload) => {
+      cleanup();
+      resolve(Boolean(payload?.ok));
+    };
+
+    script.id = callbackName;
+    script.src = url.toString();
+    script.onerror = () => {
+      cleanup();
+      resolve(false);
+    };
+    document.body.append(script);
+  });
+}
+
+function submitRowsWithForm(rows) {
+  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const frameName = `recommendationLabSubmitFrame_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  const payload = JSON.stringify({
+    lessonTitle,
+    lessonDate: lessonRecord.date || getToday(),
+    className: lessonRecord.className || "",
+    activityKey: "activity2",
+    exportedAt: new Date().toISOString(),
+    rows,
   });
 
   return new Promise((resolve) => {
@@ -779,7 +842,7 @@ function submitRowsWithForm(rows) {
     const timer = window.setTimeout(() => {
       cleanup();
       resolve(true);
-    }, 3000);
+    }, 3500);
 
     function cleanup() {
       window.clearTimeout(timer);
@@ -797,13 +860,11 @@ function submitRowsWithForm(rows) {
     input.type = "hidden";
     input.name = "payload";
     input.value = payload;
-
     form.hidden = true;
     form.method = "POST";
     form.action = endpoint;
     form.target = frameName;
     form.append(input);
-
     document.body.append(iframe, form);
     form.submit();
   });
@@ -897,7 +958,7 @@ function mergeCloudRows(rows) {
         lessonDate: row["上課日期"] || lessonRecord.date,
         className: row["班級"] || lessonRecord.className,
         groupName: row["組別"],
-        time: row["提交時間"] || "",
+        time: formatSubmissionTime(row["提交時間"]) || "",
         topTag: row["AI最想推"] || "",
         watchTime: row["觀看時間"] || "",
         path: row["推薦路徑"] ? row["推薦路徑"].split(" / ") : [],
