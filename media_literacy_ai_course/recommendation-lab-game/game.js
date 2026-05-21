@@ -165,6 +165,15 @@ function getUrlCloudEndpoint() {
   return params.get("cloud") || params.get("endpoint") || "";
 }
 
+function getUrlLessonRecord() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    date: params.get("date") || "",
+    className: params.get("className") || params.get("class") || "",
+    cloudEndpoint: getUrlCloudEndpoint(),
+  };
+}
+
 function createGroupState() {
   return {
     round: 0,
@@ -195,11 +204,20 @@ function getToday() {
 function loadLessonRecord() {
   try {
     const saved = localStorage.getItem("recommendationLabLessonRecord");
-    const urlEndpoint = getUrlCloudEndpoint();
-    const base = { date: getToday(), className: "", cloudEndpoint: urlEndpoint };
-    return saved ? { ...base, ...JSON.parse(saved), cloudEndpoint: JSON.parse(saved).cloudEndpoint || urlEndpoint } : base;
+    const urlRecord = getUrlLessonRecord();
+    const base = { date: urlRecord.date || getToday(), className: urlRecord.className, cloudEndpoint: urlRecord.cloudEndpoint };
+    if (!saved) return base;
+    const parsed = JSON.parse(saved);
+    return {
+      ...base,
+      ...parsed,
+      date: urlRecord.date || parsed.date || getToday(),
+      className: urlRecord.className || parsed.className || "",
+      cloudEndpoint: parsed.cloudEndpoint || urlRecord.cloudEndpoint,
+    };
   } catch {
-    return { date: getToday(), className: "", cloudEndpoint: getUrlCloudEndpoint() };
+    const urlRecord = getUrlLessonRecord();
+    return { date: urlRecord.date || getToday(), className: urlRecord.className, cloudEndpoint: urlRecord.cloudEndpoint };
   }
 }
 
@@ -588,6 +606,9 @@ function getStudentShareLink() {
   if (!endpoint) return "";
   const url = new URL(window.location.href);
   url.searchParams.set("cloud", endpoint);
+  url.searchParams.set("date", lessonRecord.date || getToday());
+  if (lessonRecord.className) url.searchParams.set("className", lessonRecord.className);
+  else url.searchParams.delete("className");
   return url.toString();
 }
 
