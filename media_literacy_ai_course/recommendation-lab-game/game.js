@@ -549,17 +549,17 @@ function renderSubmissionBoard() {
       </div>
       <p class="record-line">${submission.lessonDate || lessonRecord.date}｜${submission.className || lessonRecord.className || "未填班級"}</p>
       <div class="submission-meta">
-        <span>AI最想推：${submission.topTag}</span>
-        <span>觀看時間：${submission.watchTime}分鐘</span>
+        <span>AI最想推：${submission.topTag || "尚未產生"}</span>
+        <span>觀看時間：${submission.watchTime ?? 0}分鐘</span>
       </div>
       <div class="submission-answers">
-        ${submission.responses
+        ${(submission.responses || [])
           .map(
             (item, index) => `
               <div>
                 <b>想一想 ${index + 1}</b>
                 <p class="question">${item.question}</p>
-                <p>${item.answer}</p>
+                <p>${item.answer || "尚未填寫"}</p>
               </div>
             `
           )
@@ -826,6 +826,8 @@ function readCloudRows() {
 
 function mergeCloudRows(rows) {
   rows.forEach((row) => {
+    if (!isMeaningfulCloudRow(row)) return;
+
     let submission = null;
     if (row["資料JSON"]) {
       try {
@@ -854,6 +856,19 @@ function mergeCloudRows(rows) {
     const group = groups.find((item) => item.name === submission.groupName);
     if (group) submissions[group.id] = submission;
   });
+}
+
+function isMeaningfulCloudRow(row) {
+  return Boolean(
+    row["資料JSON"] ||
+      row["提交時間"] ||
+      row["AI最想推"] ||
+      row["觀看時間"] ||
+      row["推薦路徑"] ||
+      row["想一想1答案"] ||
+      row["想一想2答案"] ||
+      row["想一想3答案"]
+  );
 }
 
 function copyStudentShareLink() {
