@@ -213,7 +213,7 @@ function loadLessonRecord() {
       ...parsed,
       date: urlRecord.date || parsed.date || getToday(),
       className: urlRecord.className || parsed.className || "",
-      cloudEndpoint: parsed.cloudEndpoint || urlRecord.cloudEndpoint,
+      cloudEndpoint: urlRecord.cloudEndpoint || parsed.cloudEndpoint || "",
     };
   } catch {
     const urlRecord = getUrlLessonRecord();
@@ -758,8 +758,11 @@ function postRowsToCloud(rows, statusElement) {
 }
 
 function uploadGroupSubmission(submission) {
-  if (!lessonRecord.cloudEndpoint?.trim()) return;
   const hint = document.querySelector("#submitHint");
+  if (!lessonRecord.cloudEndpoint?.trim()) {
+    hint.textContent = "本組已提交在這台裝置，但目前不是學生雲端連結，資料不會進老師雲端後台。請用老師提供的學生連結重新進入。";
+    return;
+  }
   hint.textContent = `${submission.groupName}已提交，正在送到老師後台...`;
   Promise.race([postRowsToCloud(getRowsForSubmission(submission)), new Promise((resolve) => setTimeout(() => resolve(true), 4500))]).then((ok) => {
     hint.textContent = ok ? `${submission.groupName}已提交，已送出雲端收件箱。` : `${submission.groupName}已提交本機；雲端送出失敗，請告訴老師。`;
