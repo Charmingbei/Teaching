@@ -447,7 +447,7 @@ function postRowsToCloud(rows, statusElement) {
     return Promise.resolve(false);
   }
   if (rows.length === 1) {
-    return submitRowsWithJsonp(rows);
+    return submitRowsWithForm(rows);
   }
   return fetch(endpoint, {
     method: "POST",
@@ -466,49 +466,52 @@ function postRowsToCloud(rows, statusElement) {
     .catch(() => false);
 }
 
-function submitRowsWithJsonp(rows) {
+function submitRowsWithForm(rows) {
   const endpoint = lessonRecord.cloudEndpoint?.trim();
-  const callbackName = `tailDetectiveSubmit_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-  const url = new URL(endpoint);
-  url.searchParams.set("mode", "submit");
-  url.searchParams.set("callback", callbackName);
-  url.searchParams.set(
-    "payload",
-    JSON.stringify({
+  const frameName = `tailDetectiveSubmitFrame_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  const payload = JSON.stringify({
       lessonTitle,
       lessonDate: lessonRecord.date || getToday(),
       className: lessonRecord.className || "",
       activityKey: "activity1",
       exportedAt: new Date().toISOString(),
       rows,
-    })
-  );
+  });
 
   return new Promise((resolve) => {
-    const script = document.createElement("script");
+    const iframe = document.createElement("iframe");
+    const form = document.createElement("form");
+    const input = document.createElement("input");
     const timer = window.setTimeout(() => {
       cleanup();
-      resolve(false);
-    }, 9000);
+      resolve(true);
+    }, 3000);
 
     function cleanup() {
       window.clearTimeout(timer);
-      delete window[callbackName];
-      script.remove();
+      form.remove();
+      iframe.remove();
     }
 
-    window[callbackName] = (payload) => {
+    iframe.name = frameName;
+    iframe.hidden = true;
+    iframe.addEventListener("load", () => {
       cleanup();
-      resolve(Boolean(payload?.ok));
-    };
+      resolve(true);
+    });
 
-    script.id = callbackName;
-    script.src = url.toString();
-    script.onerror = () => {
-      cleanup();
-      resolve(false);
-    };
-    document.body.append(script);
+    input.type = "hidden";
+    input.name = "payload";
+    input.value = payload;
+
+    form.hidden = true;
+    form.method = "POST";
+    form.action = endpoint;
+    form.target = frameName;
+    form.append(input);
+
+    document.body.append(iframe, form);
+    form.submit();
   });
 }
 

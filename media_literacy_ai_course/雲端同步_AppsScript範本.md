@@ -34,7 +34,11 @@ function doPost(e) {
   lock.waitLock(10000);
 
   try {
-    const data = JSON.parse((e && e.postData && e.postData.contents) || "{}");
+    const data = JSON.parse(
+      (e && e.parameter && e.parameter.payload) ||
+      (e && e.postData && e.postData.contents) ||
+      "{}"
+    );
     return jsonOutput(appendPayload(data));
   } catch (error) {
     return jsonOutput({ ok: false, message: error.message });
