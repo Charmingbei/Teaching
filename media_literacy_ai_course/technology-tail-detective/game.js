@@ -258,6 +258,7 @@ function renderDashboard() {
   if (!dashboardUnlocked) return;
 
   renderLessonRecord();
+  renderSubmissionOverview();
   const board = document.querySelector("#submissionBoard");
   board.innerHTML = "";
 
@@ -287,6 +288,32 @@ function renderDashboard() {
       <p>${submission.goldenSentence}</p>
     `;
     board.append(card);
+  });
+}
+
+function renderSubmissionOverview() {
+  const overview = document.querySelector("#submissionOverview");
+  if (!overview) return;
+  overview.innerHTML = "";
+
+  cases.forEach((item, index) => {
+    const submission = submissions[index];
+    const card = document.createElement("article");
+    card.className = `status-card ${submission ? "submitted" : ""}`;
+    card.innerHTML = submission
+      ? `
+        <strong>${item.group}</strong>
+        <span>已提交</span>
+        <p>${submission.time || "未記錄時間"}</p>
+        <small>${submission.goldenSentence || "已收到本組填答"}</small>
+      `
+      : `
+        <strong>${item.group}</strong>
+        <span>尚未提交</span>
+        <p>${item.title}</p>
+        <small>等待學生送出</small>
+      `;
+    overview.append(card);
   });
 }
 
@@ -423,6 +450,7 @@ function postRowsToCloud(rows, statusElement) {
       lessonTitle,
       lessonDate: lessonRecord.date || getToday(),
       className: lessonRecord.className || "",
+      activityKey: "activity1",
       exportedAt: new Date().toISOString(),
       rows,
     }),
@@ -475,7 +503,7 @@ function readCloudRows() {
       mergeCloudRows(payload.rows || []);
       saveSubmissions();
       render();
-      status.textContent = `已同步 ${payload.rows?.length || 0} 筆雲端資料到教師後台。`;
+      status.textContent = `已同步 ${payload.rows?.length || 0} 筆活動一資料到教師後台。`;
     } finally {
       delete window[callbackName];
       document.querySelector(`#${callbackName}`)?.remove();

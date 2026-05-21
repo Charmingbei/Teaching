@@ -517,11 +517,78 @@ input:focus {
   line-height: 1.45;
 }
 
+.submission-overview-panel,
+.submission-detail-panel {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 2px solid rgba(46, 143, 98, 0.12);
+}
+
+.compact-title {
+  margin-bottom: 12px;
+}
+
+.submission-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.status-card {
+  min-height: 136px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff8ee;
+  border: 2px solid rgba(233, 167, 82, 0.28);
+  box-shadow: 0 8px 18px rgba(37, 51, 72, 0.06);
+}
+
+.status-card.submitted {
+  background: #ecfff4;
+  border-color: rgba(46, 143, 98, 0.36);
+}
+
+.status-card strong,
+.status-card span {
+  display: block;
+  font-weight: 900;
+}
+
+.status-card strong {
+  color: var(--ink);
+  font-size: 21px;
+}
+
+.status-card span {
+  width: fit-content;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--paper);
+  background: #d98a2b;
+  font-size: 14px;
+}
+
+.status-card.submitted span {
+  background: var(--leaf-dark);
+}
+
+.status-card p,
+.status-card small {
+  display: block;
+  margin: 8px 0 0;
+  color: var(--sub);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .submission-board {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 16px;
 }
 
 .submission-card {
@@ -588,8 +655,10 @@ input:focus {
   .temperature-grid,
   .forest,
   .submission-board,
+  .submission-overview,
   .record-panel,
   .cloud-row,
+  .student-link-row,
   .password-row {
     grid-template-columns: 1fr;
   }

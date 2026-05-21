@@ -728,6 +728,74 @@ button:hover {
   margin-bottom: 16px;
 }
 
+.submission-overview-panel,
+.submission-detail-panel {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.compact-title {
+  margin-bottom: 12px;
+}
+
+.submission-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.status-card {
+  min-height: 136px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #fff7db;
+  border: 1px solid rgba(248, 188, 73, 0.4);
+  box-shadow: 0 8px 18px rgba(24, 48, 74, 0.06);
+}
+
+.status-card.submitted {
+  background: #eafcf8;
+  border-color: rgba(42, 191, 179, 0.36);
+}
+
+.status-card strong,
+.status-card span {
+  display: block;
+  font-weight: 900;
+}
+
+.status-card strong {
+  color: var(--ink);
+  font-size: 21px;
+}
+
+.status-card span {
+  width: fit-content;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--white);
+  background: #e1a424;
+  font-size: 14px;
+}
+
+.status-card.submitted span {
+  background: var(--teal);
+}
+
+.status-card p,
+.status-card small {
+  display: block;
+  margin: 8px 0 0;
+  color: var(--sub);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .submission-board {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -850,13 +918,14 @@ button:hover {
   .content-grid,
   .event-layout,
   .tool-layout,
-  .discussion-cards,
-  .round-guide,
-  .start-steps,
-  .submission-board,
-  .record-panel,
-  .student-link-row,
-  .cloud-row {
+    .discussion-cards,
+    .round-guide,
+    .start-steps,
+    .submission-board,
+    .submission-overview,
+    .record-panel,
+    .student-link-row,
+    .cloud-row {
     grid-template-columns: 1fr;
   }
 

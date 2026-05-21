@@ -153,9 +153,22 @@
             <div class="dashboard-toolbar">
               <button id="syncCloud" class="soft-btn">同步雲端資料到後台</button>
             </div>
-            <p id="cloudStatus">學生要掃描「學生連結」提交，老師後台按同步後才會看到各組資料。</p>
+            <p id="cloudStatus">學生要掃描「學生連結」提交；雲端會自動分開活動一、活動二試算表，老師按同步後即可看見各組資料。</p>
           </section>
-          <div id="submissionBoard" class="submission-board"></div>
+          <section class="submission-overview-panel">
+            <div class="panel-title compact-title">
+              <span>最新提交狀況</span>
+              <small>六組即時檢核</small>
+            </div>
+            <div id="submissionOverview" class="submission-overview"></div>
+          </section>
+          <section class="submission-detail-panel">
+            <div class="panel-title compact-title">
+              <span>提交看板</span>
+              <small>各組學生填答</small>
+            </div>
+            <div id="submissionBoard" class="submission-board"></div>
+          </section>
         </div>
       </section>
     </main>
