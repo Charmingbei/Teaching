@@ -436,6 +436,10 @@ function getRowsForSubmission(submission) {
   ];
 }
 
+function getSubmittedBackupRows() {
+  return getBackupRows().filter((row) => row["資料JSON"] || row["提交時間"]);
+}
+
 function postRowsToCloud(rows, statusElement) {
   const endpoint = lessonRecord.cloudEndpoint?.trim();
   if (!endpoint) {
@@ -475,10 +479,15 @@ async function uploadCloudBackup() {
     status.textContent = "請先貼上雲端備份網址，再按上傳。";
     return;
   }
+  const submittedRows = getSubmittedBackupRows();
+  if (submittedRows.length === 0) {
+    status.textContent = "目前還沒有任何小組提交資料，不會上傳空白備份。學生提交後，老師請按「同步雲端資料到後台」。";
+    return;
+  }
   status.textContent = "正在送出雲端備份...";
   try {
-    await Promise.race([postRowsToCloud(getBackupRows(), status), new Promise((resolve) => setTimeout(resolve, 4500))]);
-    status.textContent = "已送出雲端備份，請到雲端試算表確認是否新增。";
+    await Promise.race([postRowsToCloud(submittedRows, status), new Promise((resolve) => setTimeout(resolve, 4500))]);
+    status.textContent = `已送出 ${submittedRows.length} 筆已提交資料，請到活動一收件箱確認。`;
   } catch {
     status.textContent = "上傳失敗，請檢查網路或雲端備份網址。";
   }
