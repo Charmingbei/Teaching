@@ -170,8 +170,30 @@ function getUrlLessonRecord() {
   return {
     date: params.get("date") || "",
     className: params.get("className") || params.get("class") || "",
-    cloudEndpoint: getUrlCloudEndpoint(),
+    cloudEndpoint: normalizeCloudEndpoint(getUrlCloudEndpoint()),
   };
+}
+
+function normalizeCloudEndpoint(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+
+  try {
+    const url = new URL(text);
+    const cloud = url.searchParams.get("cloud");
+    if (cloud) return normalizeCloudEndpoint(cloud);
+    if (url.hostname === "script.google.com" && url.pathname.includes("/macros/s/")) {
+      return `${url.origin}${url.pathname}`;
+    }
+  } catch {
+    return text;
+  }
+
+  return text;
+}
+
+function getCloudEndpoint() {
+  return normalizeCloudEndpoint(lessonRecord.cloudEndpoint);
 }
 
 function createGroupState() {
@@ -628,7 +650,7 @@ function renderDashboardLock() {
 function renderLessonRecord() {
   document.querySelector("#lessonDate").value = lessonRecord.date || getToday();
   document.querySelector("#className").value = lessonRecord.className || "";
-  document.querySelector("#cloudEndpoint").value = lessonRecord.cloudEndpoint || "";
+  document.querySelector("#cloudEndpoint").value = getCloudEndpoint();
   renderStudentShareLink();
 }
 
@@ -642,14 +664,15 @@ function bindLessonRecordInputs() {
     saveLessonRecord();
   });
   document.querySelector("#cloudEndpoint").addEventListener("input", (event) => {
-    lessonRecord.cloudEndpoint = event.target.value.trim();
+    lessonRecord.cloudEndpoint = normalizeCloudEndpoint(event.target.value);
+    event.target.value = lessonRecord.cloudEndpoint;
     saveLessonRecord();
     renderStudentShareLink();
   });
 }
 
 function getStudentShareLink() {
-  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const endpoint = getCloudEndpoint();
   if (!endpoint) return "";
   const url = new URL(window.location.href);
   url.searchParams.set("cloud", endpoint);
@@ -755,7 +778,7 @@ function getSubmittedBackupRows() {
 }
 
 function postRowsToCloud(rows, statusElement) {
-  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const endpoint = getCloudEndpoint();
   if (!endpoint) {
     if (statusElement) statusElement.textContent = "請先貼上雲端備份網址，再按上傳。";
     return Promise.resolve(false);
@@ -781,7 +804,7 @@ function postRowsToCloud(rows, statusElement) {
 }
 
 function submitRowsWithJsonp(rows) {
-  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const endpoint = getCloudEndpoint();
   const callbackName = `recommendationLabSubmit_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
   const url = new URL(endpoint);
   url.searchParams.set("mode", "submit");
@@ -824,7 +847,7 @@ function submitRowsWithJsonp(rows) {
 }
 
 function submitRowsWithForm(rows) {
-  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const endpoint = getCloudEndpoint();
   const frameName = `recommendationLabSubmitFrame_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
   const payload = JSON.stringify({
     lessonTitle,
@@ -872,7 +895,7 @@ function submitRowsWithForm(rows) {
 
 function uploadGroupSubmission(submission) {
   const hint = document.querySelector("#submitHint");
-  if (!lessonRecord.cloudEndpoint?.trim()) {
+  if (!getCloudEndpoint()) {
     hint.textContent = "本組已提交在這台裝置，但目前不是學生雲端連結，資料不會進老師雲端後台。請用老師提供的學生連結重新進入。";
     return;
   }
@@ -884,7 +907,7 @@ function uploadGroupSubmission(submission) {
 
 async function uploadCloudBackup() {
   const status = document.querySelector("#cloudStatus");
-  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const endpoint = getCloudEndpoint();
   if (!endpoint) {
     status.textContent = "請先貼上雲端備份網址，再按上傳。";
     return;
@@ -904,10 +927,14 @@ async function uploadCloudBackup() {
 }
 
 function readCloudRows() {
-  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const endpoint = getCloudEndpoint();
   const status = document.querySelector("#cloudStatus");
   if (!endpoint) {
     status.textContent = "請先貼上雲端備份網址，才能同步學生資料。";
+    return;
+  }
+  if (!endpoint.includes("script.google.com/macros/s/")) {
+    status.textContent = "雲端備份網址格式不正確，請貼 Apps Script 網頁應用程式網址，不要貼學生連結或試算表網址。";
     return;
   }
   const callbackName = `recommendationLabSync_${Date.now()}`;
@@ -915,6 +942,7 @@ function readCloudRows() {
   url.searchParams.set("mode", "read");
   url.searchParams.set("lessonTitle", lessonTitle);
   url.searchParams.set("callback", callbackName);
+  url.searchParams.set("_", Date.now().toString());
   status.textContent = "正在同步雲端資料...";
 
   window[callbackName] = (payload) => {
