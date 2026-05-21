@@ -72,7 +72,18 @@ function getHeaders(sheet, sampleRow) {
     sheet.appendRow(headers);
     return headers;
   }
-  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].filter(String);
+  const missingHeaders = Object.keys(sampleRow).filter(function(header) {
+    return existingHeaders.indexOf(header) === -1;
+  });
+
+  if (missingHeaders.length > 0) {
+    sheet
+      .getRange(1, existingHeaders.length + 1, 1, missingHeaders.length)
+      .setValues([missingHeaders]);
+  }
+
+  return existingHeaders.concat(missingHeaders);
 }
 
 function readRows() {

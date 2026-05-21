@@ -761,7 +761,6 @@ function readCloudRows() {
   const url = new URL(endpoint);
   url.searchParams.set("mode", "read");
   url.searchParams.set("lessonTitle", lessonTitle);
-  url.searchParams.set("className", lessonRecord.className || "");
   url.searchParams.set("callback", callbackName);
   status.textContent = "正在同步雲端資料...";
 
