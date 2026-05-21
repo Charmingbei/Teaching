@@ -48,6 +48,11 @@ let drafts = cases.map(() => createDraft());
 let submissions = loadSubmissions();
 let lessonRecord = loadLessonRecord();
 
+function getUrlCloudEndpoint() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("cloud") || params.get("endpoint") || "";
+}
+
 function createDraft() {
   return {
     action: "",
@@ -80,9 +85,11 @@ function getToday() {
 function loadLessonRecord() {
   try {
     const saved = localStorage.getItem("tailDetectiveLessonRecord");
-    return saved ? { date: getToday(), className: "", cloudEndpoint: "", ...JSON.parse(saved) } : { date: getToday(), className: "", cloudEndpoint: "" };
+    const urlEndpoint = getUrlCloudEndpoint();
+    const base = { date: getToday(), className: "", cloudEndpoint: urlEndpoint };
+    return saved ? { ...base, ...JSON.parse(saved), cloudEndpoint: JSON.parse(saved).cloudEndpoint || urlEndpoint } : base;
   } catch {
-    return { date: getToday(), className: "", cloudEndpoint: "" };
+    return { date: getToday(), className: "", cloudEndpoint: getUrlCloudEndpoint() };
   }
 }
 
@@ -204,6 +211,7 @@ function submitCurrentGroup() {
   document.querySelector("#submitHint").textContent = `${cases[activeGroup].group}已提交，班級尾巴森林長出新葉子了。`;
   renderForest();
   renderDashboard();
+  uploadGroupSubmission(submissions[activeGroup]);
 }
 
 function renderForest() {
@@ -268,6 +276,7 @@ function renderLessonRecord() {
   document.querySelector("#lessonDate").value = lessonRecord.date || getToday();
   document.querySelector("#className").value = lessonRecord.className || "";
   document.querySelector("#cloudEndpoint").value = lessonRecord.cloudEndpoint || "";
+  renderStudentShareLink();
 }
 
 function bindLessonRecordInputs() {
@@ -282,7 +291,22 @@ function bindLessonRecordInputs() {
   document.querySelector("#cloudEndpoint").addEventListener("input", (event) => {
     lessonRecord.cloudEndpoint = event.target.value.trim();
     saveLessonRecord();
+    renderStudentShareLink();
   });
+}
+
+function getStudentShareLink() {
+  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  if (!endpoint) return "";
+  const url = new URL(window.location.href);
+  url.searchParams.set("cloud", endpoint);
+  return url.toString();
+}
+
+function renderStudentShareLink() {
+  const input = document.querySelector("#studentShareLink");
+  if (!input) return;
+  input.value = getStudentShareLink();
 }
 
 function getBackupRows() {
@@ -302,6 +326,7 @@ function getBackupRows() {
       修復工具: submission?.repairs?.join("、") || "",
       修復做法: submission?.repairPlan || "",
       科技尾巴金句: submission?.goldenSentence || "",
+      資料JSON: submission ? JSON.stringify(submission) : "",
     };
   });
 }
@@ -342,6 +367,58 @@ function downloadJsonBackup() {
   downloadFile(`科技尾巴偵探局_${lessonRecord.date || getToday()}_${lessonRecord.className || "未填班級"}.json`, JSON.stringify(getBackupPayload(), null, 2), "application/json;charset=utf-8");
 }
 
+function getRowsForSubmission(submission) {
+  return [
+    {
+      課程: lessonTitle,
+      上課日期: submission.lessonDate || lessonRecord.date || getToday(),
+      班級: submission.className || lessonRecord.className || "",
+      組別: submission.group,
+      案件: submission.title,
+      提交時間: submission.time || "",
+      尾巴來源: submission.action || "",
+      來源理由: submission.reason || "",
+      影響對象: submission.people?.join("、") || "",
+      尾巴溫度: submission.temperature?.join("、") || "",
+      修復工具: submission.repairs?.join("、") || "",
+      修復做法: submission.repairPlan || "",
+      科技尾巴金句: submission.goldenSentence || "",
+      資料JSON: JSON.stringify(submission),
+    },
+  ];
+}
+
+function postRowsToCloud(rows, statusElement) {
+  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  if (!endpoint) {
+    if (statusElement) statusElement.textContent = "請先貼上雲端備份網址，再按上傳。";
+    return Promise.resolve(false);
+  }
+  return fetch(endpoint, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      lessonTitle,
+      lessonDate: lessonRecord.date || getToday(),
+      className: lessonRecord.className || "",
+      exportedAt: new Date().toISOString(),
+      rows,
+    }),
+  })
+    .then(() => true)
+    .catch(() => false);
+}
+
+function uploadGroupSubmission(submission) {
+  if (!lessonRecord.cloudEndpoint?.trim()) return;
+  const hint = document.querySelector("#submitHint");
+  hint.textContent = `${submission.group}已提交，正在送到老師後台...`;
+  Promise.race([postRowsToCloud(getRowsForSubmission(submission)), new Promise((resolve) => setTimeout(() => resolve(true), 4500))]).then((ok) => {
+    hint.textContent = ok ? `${submission.group}已提交，已送出雲端收件箱。` : `${submission.group}已提交本機；雲端送出失敗，請告訴老師。`;
+  });
+}
+
 async function uploadCloudBackup() {
   const status = document.querySelector("#cloudStatus");
   const endpoint = lessonRecord.cloudEndpoint?.trim();
@@ -350,19 +427,101 @@ async function uploadCloudBackup() {
     return;
   }
   status.textContent = "正在送出雲端備份...";
-  const upload = fetch(endpoint, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(getBackupPayload()),
-  });
-
   try {
-    await Promise.race([upload, new Promise((resolve) => setTimeout(resolve, 4500))]);
+    await Promise.race([postRowsToCloud(getBackupRows(), status), new Promise((resolve) => setTimeout(resolve, 4500))]);
     status.textContent = "已送出雲端備份，請到雲端試算表確認是否新增。";
   } catch {
     status.textContent = "上傳失敗，請檢查網路或雲端備份網址。";
   }
+}
+
+function readCloudRows() {
+  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const status = document.querySelector("#cloudStatus");
+  if (!endpoint) {
+    status.textContent = "請先貼上雲端備份網址，才能同步學生資料。";
+    return;
+  }
+  const callbackName = `tailDetectiveSync_${Date.now()}`;
+  const url = new URL(endpoint);
+  url.searchParams.set("mode", "read");
+  url.searchParams.set("lessonTitle", lessonTitle);
+  url.searchParams.set("className", lessonRecord.className || "");
+  url.searchParams.set("callback", callbackName);
+  status.textContent = "正在同步雲端資料...";
+
+  window[callbackName] = (payload) => {
+    try {
+      mergeCloudRows(payload.rows || []);
+      saveSubmissions();
+      render();
+      status.textContent = `已同步 ${payload.rows?.length || 0} 筆雲端資料到教師後台。`;
+    } finally {
+      delete window[callbackName];
+      document.querySelector(`#${callbackName}`)?.remove();
+    }
+  };
+
+  const script = document.createElement("script");
+  script.id = callbackName;
+  script.src = url.toString();
+  script.onerror = () => {
+    status.textContent = "同步失敗，請確認 Apps Script 已使用新版程式碼並允許所有人存取。";
+    delete window[callbackName];
+    script.remove();
+  };
+  document.body.append(script);
+}
+
+function mergeCloudRows(rows) {
+  rows.forEach((row) => {
+    let submission = null;
+    if (row["資料JSON"]) {
+      try {
+        submission = JSON.parse(row["資料JSON"]);
+      } catch {
+        submission = null;
+      }
+    }
+    if (!submission) {
+      submission = {
+        lessonTitle,
+        lessonDate: row["上課日期"] || lessonRecord.date,
+        className: row["班級"] || lessonRecord.className,
+        group: row["組別"],
+        title: row["案件"],
+        story: cases.find((item) => item.group === row["組別"])?.story || "",
+        time: row["提交時間"] || "",
+        action: row["尾巴來源"] || "",
+        reason: row["來源理由"] || "",
+        people: row["影響對象"] ? row["影響對象"].split("、") : [],
+        temperature: row["尾巴溫度"] ? row["尾巴溫度"].split("、") : [],
+        repairs: row["修復工具"] ? row["修復工具"].split("、") : [],
+        repairPlan: row["修復做法"] || "",
+        goldenSentence: row["科技尾巴金句"] || "",
+      };
+    }
+    const index = cases.findIndex((item) => item.group === submission.group);
+    if (index >= 0) submissions[index] = submission;
+  });
+}
+
+function copyStudentShareLink() {
+  const link = getStudentShareLink();
+  const status = document.querySelector("#cloudStatus");
+  if (!link) {
+    status.textContent = "請先貼上雲端備份網址，才會產生學生掃描連結。";
+    return;
+  }
+  navigator.clipboard?.writeText(link).then(
+    () => {
+      status.textContent = "已複製學生掃描連結。學生用這個連結提交，老師才能同步看到。";
+    },
+    () => {
+      document.querySelector("#studentShareLink").select();
+      status.textContent = "已選取學生連結，請手動複製。";
+    }
+  );
 }
 
 function render() {
@@ -422,5 +581,7 @@ document.querySelector("#clearBtn").addEventListener("click", () => {
 document.querySelector("#downloadCsv").addEventListener("click", downloadCsvBackup);
 document.querySelector("#downloadJson").addEventListener("click", downloadJsonBackup);
 document.querySelector("#uploadCloud").addEventListener("click", uploadCloudBackup);
+document.querySelector("#syncCloud").addEventListener("click", readCloudRows);
+document.querySelector("#copyStudentLink").addEventListener("click", copyStudentShareLink);
 
 render();

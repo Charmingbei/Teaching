@@ -706,6 +706,12 @@ button:hover {
   gap: 10px;
 }
 
+.student-link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
 .cloud-panel p,
 .record-line {
   margin: 0;
@@ -849,6 +855,7 @@ button:hover {
   .start-steps,
   .submission-board,
   .record-panel,
+  .student-link-row,
   .cloud-row {
     grid-template-columns: 1fr;
   }

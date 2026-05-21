@@ -146,7 +146,7 @@ button:hover {
   height: 100%;
   max-height: none;
   object-fit: cover;
-  object-position: center 38%;
+  object-position: center top;
   border-radius: 0;
   filter: saturate(1.04) contrast(1.02);
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.15) 8%, #000 26%, #000 100%);
@@ -498,6 +498,12 @@ input:focus {
 }
 
 .cloud-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.student-link-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;

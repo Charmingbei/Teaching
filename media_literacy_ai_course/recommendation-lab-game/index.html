@@ -154,7 +154,14 @@
               <input id="cloudEndpoint" type="url" placeholder="貼上 Google Sheet Apps Script 網址" />
               <button id="uploadCloud" class="primary-btn">上傳雲端備份</button>
             </div>
-            <p id="cloudStatus">可先下載備份檔；若已設定雲端網址，可一鍵送出紀錄。</p>
+            <div class="student-link-row">
+              <input id="studentShareLink" type="text" readonly placeholder="貼上雲端網址後，這裡會產生學生掃描連結" />
+              <button id="copyStudentLink" class="ghost-btn">複製學生連結</button>
+            </div>
+            <div class="dashboard-toolbar">
+              <button id="syncCloud" class="ghost-btn">同步雲端資料到後台</button>
+            </div>
+            <p id="cloudStatus">學生要掃描「學生連結」提交，老師後台按同步後才會看到各組資料。</p>
           </section>
           <div id="submissionBoard" class="submission-board"></div>
         </div>
