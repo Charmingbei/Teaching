@@ -35,28 +35,7 @@ function doPost(e) {
 
   try {
     const data = JSON.parse((e && e.postData && e.postData.contents) || "{}");
-    const rows = data.rows || [];
-
-    if (rows.length === 0) {
-      return jsonOutput({ ok: false, message: "No rows received" });
-    }
-
-    const lessonTitle = data.lessonTitle || rows[0]["課程"] || "";
-    const sheet = getSheetForLesson(lessonTitle);
-    const headers = getHeaders(sheet, rows[0]);
-
-    rows.forEach(function(row) {
-      sheet.appendRow(headers.map(function(header) {
-        return row[header] || "";
-      }));
-    });
-
-    return jsonOutput({
-      ok: true,
-      count: rows.length,
-      lessonTitle: lessonTitle,
-      spreadsheetUrl: sheet.getParent().getUrl(),
-    });
+    return jsonOutput(appendPayload(data));
   } catch (error) {
     return jsonOutput({ ok: false, message: error.message });
   } finally {
@@ -67,6 +46,15 @@ function doPost(e) {
 function doGet(e) {
   const mode = e.parameter.mode || "";
   const callback = e.parameter.callback || "";
+
+  if (mode === "submit") {
+    try {
+      const data = JSON.parse(e.parameter.payload || "{}");
+      return jsonpOutput(callback, appendPayload(data));
+    } catch (error) {
+      return jsonpOutput(callback, { ok: false, message: error.message });
+    }
+  }
 
   if (mode === "read") {
     const lessonTitle = e.parameter.lessonTitle || "";
@@ -88,6 +76,31 @@ function doGet(e) {
   return ContentService
     .createTextOutput("媒體素養活動雲端同步已啟用，活動一與活動二會分開試算表。")
     .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function appendPayload(data) {
+  const rows = data.rows || [];
+
+  if (rows.length === 0) {
+    return { ok: false, message: "No rows received" };
+  }
+
+  const lessonTitle = data.lessonTitle || rows[0]["課程"] || "";
+  const sheet = getSheetForLesson(lessonTitle);
+  const headers = getHeaders(sheet, rows[0]);
+
+  rows.forEach(function(row) {
+    sheet.appendRow(headers.map(function(header) {
+      return row[header] || "";
+    }));
+  });
+
+  return {
+    ok: true,
+    count: rows.length,
+    lessonTitle: lessonTitle,
+    spreadsheetUrl: sheet.getParent().getUrl(),
+  };
 }
 
 function getSheetForLesson(lessonTitle) {

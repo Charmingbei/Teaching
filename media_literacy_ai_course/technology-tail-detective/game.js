@@ -446,6 +446,9 @@ function postRowsToCloud(rows, statusElement) {
     if (statusElement) statusElement.textContent = "請先貼上雲端備份網址，再按上傳。";
     return Promise.resolve(false);
   }
+  if (rows.length === 1) {
+    return submitRowsWithJsonp(rows);
+  }
   return fetch(endpoint, {
     method: "POST",
     mode: "no-cors",
@@ -463,6 +466,52 @@ function postRowsToCloud(rows, statusElement) {
     .catch(() => false);
 }
 
+function submitRowsWithJsonp(rows) {
+  const endpoint = lessonRecord.cloudEndpoint?.trim();
+  const callbackName = `tailDetectiveSubmit_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  const url = new URL(endpoint);
+  url.searchParams.set("mode", "submit");
+  url.searchParams.set("callback", callbackName);
+  url.searchParams.set(
+    "payload",
+    JSON.stringify({
+      lessonTitle,
+      lessonDate: lessonRecord.date || getToday(),
+      className: lessonRecord.className || "",
+      activityKey: "activity1",
+      exportedAt: new Date().toISOString(),
+      rows,
+    })
+  );
+
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    const timer = window.setTimeout(() => {
+      cleanup();
+      resolve(false);
+    }, 9000);
+
+    function cleanup() {
+      window.clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = (payload) => {
+      cleanup();
+      resolve(Boolean(payload?.ok));
+    };
+
+    script.id = callbackName;
+    script.src = url.toString();
+    script.onerror = () => {
+      cleanup();
+      resolve(false);
+    };
+    document.body.append(script);
+  });
+}
+
 function uploadGroupSubmission(submission) {
   const hint = document.querySelector("#submitHint");
   if (!lessonRecord.cloudEndpoint?.trim()) {
@@ -470,7 +519,7 @@ function uploadGroupSubmission(submission) {
     return;
   }
   hint.textContent = `${submission.group}已提交，正在送到老師後台...`;
-  Promise.race([postRowsToCloud(getRowsForSubmission(submission)), new Promise((resolve) => setTimeout(() => resolve(true), 4500))]).then((ok) => {
+  postRowsToCloud(getRowsForSubmission(submission)).then((ok) => {
     hint.textContent = ok ? `${submission.group}已提交，已送出雲端收件箱。` : `${submission.group}已提交本機；雲端送出失敗，請告訴老師。`;
   });
 }
