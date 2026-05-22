@@ -16,6 +16,11 @@ const recordList = document.querySelector("#record-list");
 const videoUpload = document.querySelector("#video-upload");
 const analyzeUploadBtn = document.querySelector("#analyze-upload-btn");
 const uploadStatus = document.querySelector("#upload-status");
+const voiceScoreInput = document.querySelector("#voice-score");
+const contentScoreInput = document.querySelector("#content-score");
+const mannerScoreInput = document.querySelector("#manner-score");
+const timeMinInput = document.querySelector("#time-min");
+const timeMaxInput = document.querySelector("#time-max");
 
 const storageKey = "story-camera-coach-records";
 const endpointKey = "story-camera-coach-endpoint";
@@ -299,9 +304,9 @@ function seekVideoTo(video, time) {
 function updateLiveCues() {
   if (!state.recording) return;
   const cues = [
-    state.latestFaceDetected ? "臉部位置穩定，眼神可以繼續停在鏡頭方向。" : "臉部暫時離開畫面，請回到鏡頭中央。",
-    "肩膀放鬆、下巴微收，讓畫面看起來更穩。",
-    "手勢保持乾淨，不遮臉、不晃到畫面邊緣。"
+    state.latestFaceDetected ? "儀態穩定，表情可以再亮一點，讓聽眾更容易被你吸引。" : "臉部暫時離開畫面，請回到鏡頭中央。",
+    "語音練習重點：每個字的聲母、韻母和聲調都說完整，不急著衝下一句。",
+    "內容練習重點：說到轉折時停一下，讓故事的開始、經過、結果更清楚。"
   ];
   liveCues.innerHTML = cues.map((cue) => `<li>${cue}</li>`).join("");
   setTimeout(updateLiveCues, 2400);
@@ -314,31 +319,53 @@ function buildReport(source = {}) {
   const faceRatio = faceChecks.length
     ? faceChecks.filter(Boolean).length / faceChecks.length
     : 0.82;
-  const practiceBonus = seconds >= 20 ? 8 : seconds >= 10 ? 4 : 0;
+  const practiceBonus = seconds >= 20 ? 1 : seconds >= 10 ? 0.5 : 0;
+  const visualManner = clamp(Math.round(faceRatio * 7 + 2 + practiceBonus), 0, 10);
+  const enteredManner = readNumber(mannerScoreInput, 8, 0, 10);
+  const manner = clamp(Math.round((visualManner + enteredManner) / 2), 0, 10);
+  const voice = readNumber(voiceScoreInput, 45, 0, 60);
+  const content = readNumber(contentScoreInput, 22, 0, 30);
+  const timeMin = readNumber(timeMinInput, 3, 0, 60) * 60;
+  const timeMax = readNumber(timeMaxInput, 4, 0, 60) * 60;
+  const timePenalty = calculateTimePenalty(seconds, timeMin, timeMax);
+  const rawTotal = voice + content + manner;
+  const total = clamp(rawTotal - timePenalty, 0, 100);
 
-  const expression = clamp(Math.round(faceRatio * 42 + 44 + practiceBonus), 55, 96);
-  const posture = clamp(Math.round(faceRatio * 38 + 48 + practiceBonus / 2), 56, 96);
-  const gaze = clamp(Math.round(faceRatio * 45 + 42 + practiceBonus / 2), 54, 96);
-  const stage = clamp(Math.round((expression + posture + gaze) / 3 + 2), 55, 96);
-  const total = Math.round(expression * 0.3 + posture * 0.25 + gaze * 0.25 + stage * 0.2);
+  mannerScoreInput.value = String(manner);
 
-  return { expression, posture, gaze, stage, total, seconds, faceRatio };
+  return {
+    voice,
+    content,
+    manner,
+    visualManner,
+    timePenalty,
+    rawTotal,
+    total,
+    seconds,
+    timeMin,
+    timeMax,
+    faceRatio
+  };
 }
 
 function buildSuggestions(report) {
   const weak = [
-    ["神情", report.expression, "對鏡頭做微笑、驚訝、認真三種表情，每種停兩秒，臉不要低下去。"],
-    ["姿態", report.posture, "雙腳站在同一個位置，肩膀放鬆，練到 30 秒內身體不左右晃。"],
-    ["視線", report.gaze, "每說完一句話，眼神回到鏡頭一秒，再繼續下一句。"],
-    ["手勢", report.stage, "手勢只做到胸口高度，不遮臉，做完就收回身體兩側。"]
+    ["語音", report.voice / 60, "慢一點把字說圓：每天挑 5 句，先一字一字說清楚，再連成自然的句子。"],
+    ["內容", report.content / 30, "把故事分成開始、經過、結果三段，每段先用一句話說出重點。"],
+    ["儀態", report.manner / 10, "站穩、看前方、表情跟著情節變化；手勢只在重要地方出現。"]
   ].sort((a, b) => a[1] - b[1]);
 
+  const timeAdvice =
+    report.timePenalty > 0
+      ? `時間提醒：這次時間為 ${formatDuration(report.seconds)}，已扣 ${report.timePenalty} 分。下一次先練到 ${formatDuration(report.timeMin)} 到 ${formatDuration(report.timeMax)} 之間。`
+      : `時間很穩：${formatDuration(report.seconds)} 落在標準範圍內，這是很棒的比賽習慣。`;
+
   return [
-    `今天優先修「${weak[0][0]}」：${weak[0][2]}`,
-    "開場暖身：站好後默數 1、2，再開始說話，讓畫面先穩下來。",
-    "眼神練習：找三個句尾，把眼神停回鏡頭，各停一秒。",
-    "姿態練習：腳底不移動，肩膀不聳起，連續維持 30 秒。",
-    "回看任務：看自己的錄影，只圈出一個最自然的表情和一個要改的動作。"
+    `很棒的是，你已經完成一次完整練習。今天優先修「${weak[0][0]}」：${weak[0][2]}`,
+    "語音處方：錄 30 秒，只檢查聲、韻、調。聽到含糊的字，就把那一句重說 3 次。",
+    "內容處方：練習前先說出三個段落標題，讓故事有清楚的路線。",
+    "儀態處方：站好後默數 1、2 再開始；說到開心、緊張、驚訝時，讓表情跟著出現。",
+    timeAdvice
   ];
 }
 
@@ -351,10 +378,15 @@ function buildRecord(report, suggestions, metadata = {}) {
     practicedTime: now.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }),
     studentName: studentName.value.trim() || "未命名練習者",
     scores: {
-      expression: report.expression,
-      posture: report.posture,
-      gaze: report.gaze,
-      stage: report.stage,
+      voice: report.voice,
+      content: report.content,
+      manner: report.manner,
+      timePenalty: report.timePenalty,
+      rawTotal: report.rawTotal,
+      expression: report.voice,
+      posture: report.content,
+      gaze: report.manner,
+      stage: report.timePenalty,
       total: report.total
     },
     durationSeconds: report.seconds,
@@ -371,26 +403,34 @@ function buildRecord(report, suggestions, metadata = {}) {
 
 function renderSignals(report) {
   readinessScore.textContent = `${report.total}`;
-  document.querySelector("#face-signal").textContent = report.expression >= 82 ? "自然明亮" : "表情再打開";
-  document.querySelector("#posture-signal").textContent = report.posture >= 82 ? "穩定大方" : "站姿再定";
-  document.querySelector("#voice-signal").textContent = report.gaze >= 82 ? "視線穩定" : "看鏡頭再久";
-  document.querySelector("#story-signal").textContent = report.stage >= 82 ? "大方自然" : "動作再收";
+  document.querySelector("#face-signal").textContent = `${report.voice}/60`;
+  document.querySelector("#posture-signal").textContent = `${report.content}/30`;
+  document.querySelector("#voice-signal").textContent = `${report.manner}/10`;
+  document.querySelector("#story-signal").textContent =
+    report.timePenalty > 0 ? `扣 ${report.timePenalty} 分` : "未扣分";
 }
 
 function renderRubric(report) {
   const items = [
-    ["神情亮度", report.expression, "練習時先停一秒再開始，讓微笑、眼睛與臉部方向一起準備好。"],
-    ["姿態穩定", report.posture, "雙腳固定在同一個位置，肩膀放鬆，身體不要左右晃動。"],
-    ["視線連結", report.gaze, "把鏡頭想成正在聽你說話的人，句子結束時讓眼神回到鏡頭。"],
-    ["畫面大方度", report.stage, "手勢保持小而清楚，不遮住臉，動作完成後自然收回身體兩側。"]
+    ["語音（聲、韻、調）", report.voice, 60, buildVoiceComment(report.voice)],
+    ["內容（思想、結構）", report.content, 30, buildContentComment(report.content)],
+    ["儀態（動作、表情）", report.manner, 10, buildMannerComment(report.manner)],
+    [
+      "時間扣分",
+      report.timePenalty,
+      "扣分",
+      report.timePenalty > 0
+        ? `這次時間 ${formatDuration(report.seconds)}，依規則扣 ${report.timePenalty} 分。下次先用計時器練到標準時間內。`
+        : `這次時間 ${formatDuration(report.seconds)}，沒有時間扣分，節奏掌握得很穩。`
+    ]
   ];
 
   rubricResults.innerHTML = items
     .map(
-      ([title, score, advice]) => `
+      ([title, score, maxScore, advice]) => `
         <article class="rubric-item">
-          <div class="rubric-heading"><span>${title}</span><span>${score}/100</span></div>
-          <div class="bar" style="--value:${score}%"><i></i></div>
+          <div class="rubric-heading"><span>${title}</span><span>${formatRubricScore(score, maxScore)}</span></div>
+          <div class="bar" style="--value:${getRubricBarValue(score, maxScore)}%"><i></i></div>
           <p>${advice}</p>
         </article>
       `
@@ -450,10 +490,60 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function formatRubricScore(score, maxScore) {
+  if (maxScore === "扣分") return score > 0 ? `扣 ${score} 分` : "未扣分";
+  return `${score}/${maxScore}`;
+}
+
+function getRubricBarValue(score, maxScore) {
+  if (maxScore === "扣分") return score > 0 ? Math.min(100, score * 10) : 0;
+  return Math.round((score / maxScore) * 100);
+}
+
+function readNumber(input, fallback, min, max) {
+  const value = Number(input.value);
+  if (!Number.isFinite(value)) return fallback;
+  return clamp(value, min, max);
+}
+
+function calculateTimePenalty(seconds, minSeconds, maxSeconds) {
+  if (!minSeconds && !maxSeconds) return 0;
+  let offSeconds = 0;
+  if (minSeconds && seconds < minSeconds) offSeconds = minSeconds - seconds;
+  if (maxSeconds && seconds > maxSeconds) offSeconds = seconds - maxSeconds;
+  if (offSeconds <= 0) return 0;
+  return Math.ceil(offSeconds / 30) * 2;
+}
+
+function formatDuration(seconds) {
+  const safeSeconds = Math.max(0, Math.round(seconds || 0));
+  const minutes = Math.floor(safeSeconds / 60);
+  const remaining = String(safeSeconds % 60).padStart(2, "0");
+  return `${minutes}:${remaining}`;
+}
+
+function buildVoiceComment(score) {
+  if (score >= 52) return "語音很清楚，聲、韻、調已經有穩定感。下一步可以練情緒變化，讓聲音更有畫面。";
+  if (score >= 42) return "語音有基礎，孩子已經敢說出來了。下一次請放慢速度，把容易糊掉的字圈出來重練。";
+  return "語音還在暖身期，請先不要急。每天練 5 句，把每個字說完整，清楚度會很快進步。";
+}
+
+function buildContentComment(score) {
+  if (score >= 26) return "內容結構清楚，故事有方向。可以再加強轉折前後的停頓，讓聽眾更容易跟上。";
+  if (score >= 20) return "內容已經聽得出主線。下一次先用三句話整理開始、經過、結果，再完整說一次。";
+  return "內容可以慢慢整理，不用一次背很多。先抓住故事最重要的三件事，說清楚就很棒。";
+}
+
+function buildMannerComment(score) {
+  if (score >= 8) return "儀態自然大方，表情和動作能幫助故事。下一步讓眼神在句尾穩定停一下。";
+  if (score >= 6) return "儀態已經穩住了。下一次練腳不移動、肩膀放鬆，手勢只放在最重要的句子。";
+  return "儀態還可以更放鬆。先練站穩 30 秒，微笑看前方，再開始說，孩子會更有安全感。";
+}
+
 loadRecords();
-renderSignals({ expression: 0, posture: 0, gaze: 0, stage: 0, total: "--" });
-renderRubric({ expression: 78, posture: 76, gaze: 74, stage: 80 });
+renderSignals({ voice: 0, content: 0, manner: 0, timePenalty: 0, total: "--" });
+renderRubric({ voice: 45, content: 22, manner: 8, timePenalty: 0, seconds: 0 });
 renderPlan([
-  "開啟鏡頭後開始練習，完成分析時會產生本次處方。",
+  "請先依正式標準填入語音、內容、儀態分數，再開始或上傳練習。",
   "處方會和練習日期、練習者一起保留在紀錄中。"
 ]);

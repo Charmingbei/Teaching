@@ -47,6 +47,33 @@
             </div>
           </div>
 
+          <section class="rubric-settings" aria-label="正式評分設定">
+            <h2>正式評分設定</h2>
+            <div class="setting-grid">
+              <div class="field">
+                <label for="voice-score">語音：聲、韻、調（60%）</label>
+                <input id="voice-score" type="number" min="0" max="60" value="45" />
+              </div>
+              <div class="field">
+                <label for="content-score">內容：思想、結構（30%）</label>
+                <input id="content-score" type="number" min="0" max="30" value="22" />
+              </div>
+              <div class="field">
+                <label for="manner-score">儀態：動作、表情（10%）</label>
+                <input id="manner-score" type="number" min="0" max="10" value="8" />
+              </div>
+              <div class="field">
+                <label for="time-min">時間下限（分鐘）</label>
+                <input id="time-min" type="number" min="0" step="0.5" value="3" />
+              </div>
+              <div class="field">
+                <label for="time-max">時間上限（分鐘）</label>
+                <input id="time-max" type="number" min="0" step="0.5" value="4" />
+              </div>
+            </div>
+            <p>道具不列入評分。時間不足或超過，每半分鐘扣 2 分，不足半分鐘以半分鐘計。</p>
+          </section>
+
           <section class="cloud-box" aria-label="雲端紀錄設定">
             <div class="field">
               <label for="cloud-endpoint">雲端紀錄位置</label>
@@ -66,36 +93,36 @@
 
           <section id="live-tab" class="tab-page active">
             <div class="score-meter">
-              <span>鏡頭展現穩定度</span>
+              <span>評分總分</span>
               <strong id="readiness-score">--</strong>
             </div>
             <div class="signal-grid">
               <article>
-                <span>神情</span>
+                <span>語音</span>
                 <strong id="face-signal">待觀察</strong>
-                <p>臉部朝向、表情亮度、是否自然看向鏡頭。</p>
+                <p>聲音是否清楚，聲、韻、調是否穩定。</p>
               </article>
               <article>
-                <span>姿態</span>
+                <span>內容</span>
                 <strong id="posture-signal">待觀察</strong>
-                <p>站姿穩定、肩膀放鬆、身體是否過度晃動。</p>
+                <p>思想是否清楚，故事結構是否完整。</p>
               </article>
               <article>
-                <span>視線</span>
+                <span>儀態</span>
                 <strong id="voice-signal">待觀察</strong>
-                <p>是否面向觀眾，眼神能不能停留在鏡頭方向。</p>
+                <p>動作、表情、站姿是否自然大方。</p>
               </article>
               <article>
-                <span>舞台感</span>
+                <span>時間</span>
                 <strong id="story-signal">待觀察</strong>
-                <p>入鏡位置、表情節奏、整體是否大方自然。</p>
+                <p>不足或超過每半分鐘扣 2 分。</p>
               </article>
             </div>
             <ul id="live-cues" class="cue-list"></ul>
           </section>
 
           <section id="report-tab" class="tab-page">
-            <h2>鏡頭展現分析</h2>
+            <h2>正式評分分析</h2>
             <div id="rubric-results" class="rubric-results"></div>
           </section>
 
