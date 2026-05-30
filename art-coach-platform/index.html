@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>藝思引導站</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AI 輔助美術教學平台</p>
+          <h1>藝思引導站</h1>
+        </div>
+        <nav class="tabs" aria-label="主要分頁">
+          <button class="tab active" data-view="composition" type="button">構圖教學</button>
+          <button class="tab" data-view="learning" type="button">學習天地</button>
+          <button class="tab" data-view="competition" type="button">比賽指導</button>
+          <button class="tab" data-view="teacher" type="button">教師後台</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="view active" id="composition-view">
+          <div class="tool-layout">
+            <section class="panel">
+              <div class="section-heading">
+                <div>
+                  <p class="section-label">構圖教學</p>
+                  <h2>上傳或拍攝作品，取得可執行的構圖建議</h2>
+                </div>
+              </div>
+              <form class="guide-form" data-tool="composition">
+                <div class="form-grid">
+                  <label>班級<input name="className" type="text" maxlength="12" placeholder="例如：601、六年甲班" required /></label>
+                  <label>座號<input name="seat" type="number" min="1" max="60" placeholder="例如：12" required /></label>
+                  <label>創作媒材<select name="medium" required></select></label>
+                  <label>作品階段
+                    <select name="stage" required>
+                      <option>草圖</option>
+                      <option>上色中</option>
+                      <option>接近完成</option>
+                    </select>
+                  </label>
+                </div>
+                <label>作品目標或目前卡住的地方<textarea name="note" maxlength="180" placeholder="例如：主角不夠明顯、背景不知道怎麼安排"></textarea></label>
+                <div class="media-inputs">
+                  <label class="file-drop"><span>上傳作品照片</span><input type="file" accept="image/*" /></label>
+                  <label class="file-drop"><span>直接拍攝</span><input type="file" accept="image/*" capture="environment" /></label>
+                </div>
+                <button class="primary-action" type="submit">產生構圖建議</button>
+              </form>
+            </section>
+            <aside class="panel result-panel">
+              <div class="image-preview" data-preview="composition"><span>作品預覽</span></div>
+              <div class="guidance" id="composition-result">
+                <p class="empty-state">請先填寫資料並上傳作品，系統會從主體、視線動線、留白、層次與完成度給出引導。</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="learning-view">
+          <div class="tool-layout">
+            <section class="panel">
+              <div class="section-heading">
+                <div>
+                  <p class="section-label">學習天地</p>
+                  <h2>依班級、媒材與主題產生創作任務</h2>
+                </div>
+              </div>
+              <form class="guide-form" data-tool="learning">
+                <div class="form-grid">
+                  <label>班級<input name="className" type="text" maxlength="12" placeholder="例如：601、六年甲班" required /></label>
+                  <label>座號<input name="seat" type="number" min="1" max="60" placeholder="例如：12" required /></label>
+                  <label>創作媒材<select name="medium" required></select></label>
+                  <label>創作主題類型<select name="theme" required></select></label>
+                </div>
+                <label>想畫的內容或關鍵詞<textarea name="note" maxlength="180" placeholder="例如：海洋、校園、家人、未來城市、情緒故事"></textarea></label>
+                <button class="primary-action" type="submit">產生創作建議</button>
+              </form>
+            </section>
+            <aside class="panel result-panel">
+              <div class="guidance wide" id="learning-result">
+                <p class="empty-state">選擇條件後，這裡會提供適合該班級程度的創作目標、技法練習、構思步驟與自我檢核。</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="competition-view">
+          <div class="tool-layout">
+            <section class="panel">
+              <div class="section-heading">
+                <div>
+                  <p class="section-label">比賽指導</p>
+                  <h2>分析作品照片，整理送件前的修改優先序</h2>
+                </div>
+              </div>
+              <form class="guide-form" data-tool="competition">
+                <div class="form-grid">
+                  <label>班級<input name="className" type="text" maxlength="12" placeholder="例如：601、六年甲班" required /></label>
+                  <label>座號<input name="seat" type="number" min="1" max="60" placeholder="例如：12" required /></label>
+                  <label>創作媒材<select name="medium" required></select></label>
+                  <label>比賽類型
+                    <select name="contest" required>
+                      <option>校內美展</option>
+                      <option>縣市美展</option>
+                      <option>全國學生美術比賽</option>
+                      <option>海報設計比賽</option>
+                      <option>主題徵畫</option>
+                    </select>
+                  </label>
+                </div>
+                <label>比賽主題、作品題名或老師想加強的重點<textarea name="note" maxlength="180" placeholder="例如：題目是守護家鄉，想加強故事性與完成度"></textarea></label>
+                <div class="media-inputs">
+                  <label class="file-drop"><span>上傳作品照片</span><input type="file" accept="image/*" /></label>
+                  <label class="file-drop"><span>直接拍攝</span><input type="file" accept="image/*" capture="environment" /></label>
+                </div>
+                <button class="primary-action" type="submit">產生比賽指導</button>
+              </form>
+            </section>
+            <aside class="panel result-panel">
+              <div class="image-preview" data-preview="competition"><span>作品預覽</span></div>
+              <div class="guidance" id="competition-result">
+                <p class="empty-state">上傳作品後，系統會依主題表達、視覺焦點、技法成熟度、完成度與比賽辨識度提出修改方向。</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="teacher-view">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">教師後台</p>
+                <h2>學生使用狀況與教學調整依據</h2>
+              </div>
+              <div class="action-row">
+                <button class="secondary-action" id="export-csv" type="button">匯出 CSV</button>
+                <button class="secondary-action danger" id="clear-data" type="button">清除本機紀錄</button>
+              </div>
+            </div>
+            <div class="analytics-grid">
+              <div class="metric"><span id="metric-uses">0</span><p>使用次數</p></div>
+              <div class="metric"><span id="metric-students">0</span><p>學生數</p></div>
+              <div class="metric"><span id="metric-top-tool">尚無</span><p>最常使用</p></div>
+              <div class="metric"><span id="metric-need">尚無</span><p>最需補強</p></div>
+            </div>
+            <section class="database-panel">
+              <div>
+                <p class="section-label">雲端同步</p>
+                <h3>Google 試算表後台</h3>
+                <p id="database-status">紀錄會先保存在本機，設定 Web App URL 後可同步到試算表。</p>
+              </div>
+              <label>資料庫 Web App URL<input id="database-endpoint" type="url" placeholder="貼上 Google Apps Script Web App URL" /></label>
+              <div class="database-actions">
+                <button class="secondary-action" id="save-database-endpoint" type="button">儲存</button>
+                <button class="secondary-action" id="sync-database" type="button">同步</button>
+              </div>
+            </section>
+            <div class="record-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>時間</th>
+                    <th>工具</th>
+                    <th>班級 / 座號</th>
+                    <th>媒材</th>
+                    <th>主題或比賽</th>
+                    <th>系統判斷</th>
+                    <th>教學提醒</th>
+                  </tr>
+                </thead>
+                <tbody id="record-table"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
