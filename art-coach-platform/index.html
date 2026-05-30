@@ -134,7 +134,17 @@
         </section>
 
         <section class="view" id="teacher-view">
-          <section class="panel">
+          <section class="panel teacher-lock" id="teacher-lock">
+            <p class="section-label">教師後台</p>
+            <h2>請輸入教師密碼</h2>
+            <div class="teacher-login-row">
+              <label>教師密碼<input id="teacher-password-input" type="password" inputmode="numeric" placeholder="請輸入密碼" /></label>
+              <button class="primary-action" id="teacher-unlock" type="button">進入後台</button>
+            </div>
+            <p class="helper-text" id="teacher-login-message">預設密碼為教師端使用。</p>
+          </section>
+
+          <section class="panel hidden" id="teacher-dashboard">
             <div class="section-heading">
               <div>
                 <p class="section-label">教師後台</p>

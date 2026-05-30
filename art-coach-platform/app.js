@@ -51,21 +51,27 @@ function fillSelects() {
 }
 
 function showView(view) {
-  if (view === "teacher" && !requestTeacherAccess()) return;
   $$(".view").forEach((section) => section.classList.toggle("active", section.id === `${view}-view`));
   $$(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.view === view));
-  if (view === "teacher") renderTeacher();
+  if (view === "teacher") renderTeacherAccess();
 }
 
-function requestTeacherAccess() {
-  if (state.teacherAuthenticated) return true;
-  const input = prompt("請輸入教師後台密碼");
+function renderTeacherAccess() {
+  $("#teacher-lock").classList.toggle("hidden", state.teacherAuthenticated);
+  $("#teacher-dashboard").classList.toggle("hidden", !state.teacherAuthenticated);
+  if (state.teacherAuthenticated) renderTeacher();
+}
+
+function unlockTeacher() {
+  const input = $("#teacher-password-input").value.trim();
   if (input === teacherPassword) {
     state.teacherAuthenticated = true;
-    return true;
+    $("#teacher-password-input").value = "";
+    $("#teacher-login-message").textContent = "已進入教師後台。";
+    renderTeacherAccess();
+    return;
   }
-  if (input !== null) alert("密碼錯誤，無法進入教師後台。");
-  return false;
+  $("#teacher-login-message").textContent = "密碼錯誤，請再試一次。";
 }
 
 function getFormData(form) {
@@ -462,6 +468,10 @@ function bindEvents() {
     state.syncQueue = [];
     saveData();
     renderTeacher();
+  });
+  $("#teacher-unlock").addEventListener("click", unlockTeacher);
+  $("#teacher-password-input").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") unlockTeacher();
   });
 }
 
